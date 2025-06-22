@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    :root {
+        --bg: #fefaf6;
+        --card: #ffffff;
+        --text-dark: #2b1a1a;
+        --accent: #a7745b;
+        --accent-hover: #83543a;
+        --shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    body {
+        margin: 0;
+        font-family: 'Poppins', sans-serif;
+        background-color: var(--bg);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    .login-container {
+        background-color: var(--card);
+        padding: 48px 36px;
+        border-radius: 16px;
+        border: 1px solid #e4dcd2;
+        box-shadow: var(--shadow);
+        width: 100%;
+        max-width: 440px;
+    }
+
+    .login-container h2 {
+        font-family: 'Playfair Display', serif;
+        font-size: 28px;
+        text-align: center;
+        margin-bottom: 30px;
+        color: var(--text-dark);
+    }
+
+    form p {
+        margin-bottom: 20px;
+        font-size: 15px;
+        font-weight: 600;
+        color: #3e3e3e;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #d9d2ca;
+        border-radius: 10px;
+        font-size: 15px;
+        background-color: #e9f0ff;
+        transition: border 0.3s ease;
+        box-sizing: border-box;
+    }
+
+    input[type="text"]:focus,
+    input[type="password"]:focus {
+        border-color: var(--accent);
+        outline: none;
+    }
+
+    .form-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin-top: 25px;
+    }
+
+    .form-buttons input[type="submit"],
+    .form-buttons .button-link {
+        display: block;
+        width: 100%;
+        padding: 14px;
+        border: none;
+        border-radius: 32px;
+        font-size: 16px;
+        font-weight: bold;
+        text-align: center;
+        text-decoration: none;
+        background: linear-gradient(to right, var(--accent), var(--accent-hover));
+        color: white;
+        cursor: pointer;
+        transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+    .form-buttons input[type="submit"]:hover,
+    .form-buttons .button-link:hover {
+        background: linear-gradient(to right, #996147, #6e402b);
+        transform: scale(1.02);
+    }
+
+    .form-buttons .back-home {
+        background: none;
+        color: var(--accent);
+        font-weight: 600;
+        text-align: left;
+        padding-left: 0;
+        margin-top: 10px;
+        font-size: 15px;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .form-buttons .back-home:hover {
+        color: var(--accent-hover);
+    }
+
+    .form-buttons .back-home::before {
+        content: "←";
+        margin-right: 8px;
+    }
+    .back-home {
+    color: #a7745b; /* your brand brown */
+    font-weight: 600;
+    font-size: 16px;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    display: inline-block;
+}
+
+.back-home:hover {
+    color: #83543a; /* darker on hover */
+    text-decoration: underline;
+}
+
+
+    ul {
+        padding-left: 20px;
+        color: #c0392b;
+        margin-bottom: 20px;
+        font-size: 14px;
+    }
+</style>
+
+<div class="login-container">
+    <h2>Organizer Login</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul>
+          {% for category, message in messages %}
+            <li><strong>{{ category.title() }}:</strong> {{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <p>{{ form.username.label }}<br>{{ form.username(size=32) }}</p>
+        <p>{{ form.password.label }}<br>{{ form.password(size=32) }}</p>
+
+        <div class="form-buttons">
+    {{ form.submit(class="submit-button") }}
+</div>
+
+<div style="text-align: center; margin-top: 20px;">
+    <a href="{{ url_for('home') }}" class="back-home">← Back to Home</a>
+</div>
+    </form>
+</div>
+{% endblock %}

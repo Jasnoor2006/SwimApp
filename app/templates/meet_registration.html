@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+:root {
+  --bg-base: #f5f1ec;
+  --text-dark: #2b1a1a;
+  --accent-main: #a7745b;
+  --accent-hover: #83543a;
+  --card-bg: #fefcfb;
+  --border-light: #e0d7cf;
+  --sidebar-dark: #40342d;
+  --sidebar-accent: #a2826e;
+}
+
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--bg-base);
+  color: var(--text-dark);
+}
+.checkbox-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 20px;
+  margin-bottom: 30px;
+}
+
+.checkbox-item {
+  background-color: #fffdfb;
+  border: 1px solid var(--border-light);
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.checkbox-item input[type="checkbox"] {
+  transform: scale(1.2);
+}
+
+
+.wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+.toggle-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background-color: var(--accent-main);
+  color: white;
+  font-size: 22px;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  z-index: 1001;
+}
+
+.sidebar {
+  width: 250px;
+  background-color: var(--sidebar-dark);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 999;
+  transition: transform 0.3s ease-in-out;
+}
+
+.sidebar.collapsed {
+  transform: translateX(-100%);
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-header img {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 15px;
+}
+
+.sidebar a {
+  color: white;
+  text-decoration: none;
+  padding: 16px 22px;
+  font-weight: 500;
+  transition: background 0.3s ease;
+}
+
+.sidebar a:hover {
+  background-color: var(--sidebar-accent);
+}
+
+.main-content {
+  margin-left: 250px;
+  padding: 40px 30px;
+  flex: 1;
+  transition: margin-left 0.3s ease-in-out;
+}
+
+.sidebar.collapsed + .main-content {
+  margin-left: 0;
+}
+
+.form-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  padding: 30px 40px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  max-width: 800px;
+}
+
+.form-card h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px;
+  margin-bottom: 10px;
+}
+
+.form-card p {
+  font-size: 16px;
+  margin: 10px 0;
+}
+
+.checkbox-list {
+  margin-top: 20px;
+  margin-bottom: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+input[type="submit"] {
+  background-color: var(--accent-main);
+  color: white;
+  font-weight: 500;
+  font-size: 15px;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+input[type="submit"]:hover {
+  background-color: var(--accent-hover);
+}
+</style>
+<button id="sidebarToggle" class="toggle-btn" onclick="toggleSidebar()">☰</button>
+
+<div class="wrapper">
+    <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="https://via.placeholder.com/40" alt="Swimmer">
+      <div>
+        <strong>{{ swimmer.name }}</strong><br>
+        <small>Swimmer</small>
+      </div>
+    </div>
+    <a href="{{ url_for('swimmer_dashboard') }}">Dashboard</a>
+    <a href="{{ url_for('swimmer_profile') }}">Profile</a>
+    <a href="{{ url_for('logout') }}">Logout</a>
+  </div>
+
+    <!-- Main -->
+    <div class="main-content">
+        <h1>Register for {{ event.name }}</h1>
+        <div class="details">
+            <p><b>Event Dates:</b> {{ event.start_date.strftime('%d %b %Y') }} to {{ event.end_date.strftime('%d %b %Y') }}</p>
+            <p><b>Registration Period:</b> {{ event.registration_start_date.strftime('%d %b %Y') }} to {{ event.registration_end_date.strftime('%d %b %Y') }}</p>
+        </div>
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }}" style="margin-bottom: 20px; padding: 12px; border-radius: 8px; background-color:
+        {% if category == 'success' %}#d4edda
+        {% elif category == 'danger' %}#f8d7da
+        {% elif category == 'warning' %}#fff3cd
+        {% else %}#e2e3e5{% endif %};
+        color:
+        {% if category == 'success' %}#155724
+        {% elif category == 'danger' %}#721c24
+        {% elif category == 'warning' %}#856404
+        {% else %}#383d41{% endif %};
+      ">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+        <form method="POST" action="{{ url_for('meet_register', event_id=event.id) }}">
+    <p>Hi <strong>{{ swimmer.name }}</strong>, please select your individual and relay events below:</p>
+
+    <div class="checkbox-grid">
+        {% for ev in event_choices %}
+            <label class="checkbox-item">
+                <input type="checkbox" name="event_choices" value="{{ ev }}">
+                {{ ev }}
+            </label>
+        {% endfor %}
+    </div>
+
+    <input type="submit" value="Register for Selected Events">
+</form>
+
+    </div>
+</div>
+{% endblock %}

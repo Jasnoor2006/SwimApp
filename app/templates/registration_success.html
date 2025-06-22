@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="text-align: center; padding: 60px;">
+  <h1 style="color: green; font-size: 36px;">🎉 Registration Successful!</h1>
+  <p>You have successfully registered for <strong>{{ event.name }}</strong>.</p>
+  <a href="{{ url_for('swimmer_dashboard') }}" class="btn btn-success" style="margin-top: 20px;">Go to Dashboard</a>
+</div>
+{% endblock %}

@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    body {
+        margin: 0;
+        font-family: 'Poppins', sans-serif;
+        background-color: #f4f1ed;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    .login-container {
+        background-color: #fffdfb;
+        padding: 48px 36px;
+        border-radius: 16px;
+        border: 1px solid #e4dcd2;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+        width: 100%;
+        max-width: 440px;
+    }
+
+    .login-container h2 {
+        font-family: 'Playfair Display', serif;
+        font-size: 28px;
+        text-align: center;
+        margin-bottom: 30px;
+        color: #2e2018;
+    }
+
+    form p {
+        margin-bottom: 20px;
+        font-size: 15px;
+        font-weight: 600;
+        color: #3e3e3e;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #d9d2ca;
+        border-radius: 10px;
+        font-size: 15px;
+        background-color: #e9f0ff;
+        transition: border 0.3s ease;
+        box-sizing: border-box;
+    }
+
+    input[type="text"]:focus,
+    input[type="password"]:focus {
+        border-color: #b48f74;
+        outline: none;
+    }
+
+    .form-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin-top: 25px;
+    }
+
+    .form-buttons input[type="submit"] {
+        background: linear-gradient(to right, #8b5e3c, #c9966b);
+        color: white;
+        padding: 14px;
+        font-size: 16px;
+        font-weight: bold;
+        border: none;
+        border-radius: 32px;
+        cursor: pointer;
+        transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+    .form-buttons input[type="submit"]:hover {
+        background: linear-gradient(to right, #6c4024, #a97654);
+        transform: scale(1.02);
+    }
+    .back-home-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.back-home {
+    font-size: 15px;
+    font-weight: 600;
+    color: #9b6247;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+}
+
+.back-home:hover {
+    color: #6f3c27;
+}
+
+.back-home::before {
+    content: "←";
+    margin-right: 6px;
+    font-weight: bold;
+}
+
+</style>
+
+<div class="login-container">
+    <h2>Admin Login</h2>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <p>{{ form.username.label }}<br>{{ form.username(size=32) }}</p>
+        <p>{{ form.password.label }}<br>{{ form.password(size=32) }}</p>
+        <div class="form-buttons">
+    {{ form.submit(class="submit-button") }}
+</div>
+
+<div class="back-home-wrapper">
+    <a href="{{ url_for('home') }}" class="back-home">Back to Home</a>
+</div>
+{% endblock %}

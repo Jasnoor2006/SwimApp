@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Signup Submitted</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #fefaf6;
+            --card-bg: #ffffff;
+            --text-main: #2b1a1a;
+            --text-sub: #5a4a42;
+            --accent: #a7745b;
+            --accent-hover: #83543a;
+            --shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .confirmation-container {
+            background-color: var(--card-bg);
+            padding: 40px 30px;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            border: 1px solid #e6ddd6;
+        }
+
+        .confirmation-container h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            color: var(--text-main);
+            margin-bottom: 18px;
+        }
+
+        .confirmation-container p {
+            font-size: 16px;
+            color: var(--text-sub);
+            margin-bottom: 32px;
+        }
+
+        .home-button {
+            padding: 12px 28px;
+            background: linear-gradient(to right, var(--accent), var(--accent-hover));
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            border-radius: 10px;
+            font-size: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        .home-button:hover {
+            background: linear-gradient(to right, #996147, #6e402b);
+            transform: scale(1.03);
+        }
+    </style>
+</head>
+<body>
+    <div class="confirmation-container">
+        <h2>Signup Request Submitted</h2>
+        <p>Please wait for approval. You’ll receive your login credentials via email once approved.</p>
+        <a href="{{ url_for('home') }}" class="home-button">Back to Home</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+:root {
+  --bg-base: #f5f1ec;
+  --text-dark: #2b1a1a;
+  --text-light: #ffffff;
+  --accent-main: #a7745b;
+  --accent-hover: #83543a;
+  --card-bg: #fefcfb;
+  --border-light: #e0d7cf;
+  --sidebar-dark: #40342d;
+  --sidebar-accent: #a2826e;
+}
+
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--bg-base);
+  color: var(--text-dark);
+}
+
+.wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+.toggle-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background-color: var(--accent-main);
+  color: white;
+  font-size: 22px;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  z-index: 1001;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar {
+  width: 250px;
+  background-color: var(--sidebar-dark);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 999;
+  transition: transform 0.3s ease-in-out;
+}
+
+.sidebar.collapsed {
+  transform: translateX(-100%);
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-header img {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 15px;
+}
+
+.sidebar-header strong {
+  font-size: 14px;
+}
+
+.sidebar a {
+  color: white;
+  text-decoration: none;
+  padding: 16px 22px;
+  font-weight: 500;
+  transition: background 0.3s ease;
+}
+
+.sidebar a:hover {
+  background-color: var(--sidebar-accent);
+}
+
+.main-content {
+  margin-left: 250px;
+  padding: 40px 30px;
+  flex: 1;
+}
+
+.dashboard-container {
+  background-color: var(--card-bg);
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-light);
+  max-width: 1000px;
+  margin: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 30px;
+}
+
+th, td {
+  border: 1px solid #aaa;
+  padding: 10px 12px;
+  text-align: left;
+}
+
+th {
+  background-color: #f1e6df;
+  font-weight: bold;
+}
+
+.group-title {
+  margin-top: 40px;
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--accent-main);
+}
+</style>
+
+<!-- Sidebar Toggle Button -->
+<button id="sidebarToggle" class="toggle-btn" onclick="toggleSidebar()">☰</button>
+
+<div class="wrapper">
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="https://via.placeholder.com/40" alt="Organizer">
+            <div>
+                <strong>{{ current_user.person_name }}</strong><br>
+                <small>Organizer</small>
+            </div>
+        </div>
+        <a href="{{ url_for('organizer_profile') }}">Profile</a>
+        <a href="{{ url_for('organizer_dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('events') }}">Events</a>
+        <a href="#">Upload Results</a>
+        <a href="#">View Medal Tally</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
+    </div>
+       <div class="main-content" id="mainContent">
+        <div class="dashboard-container">
+<h2>Entries for Event: {{ event.name }}</h2>
+
+{% for event_name, age_groups in event_structure.items() %}
+  <h2 style="margin-top: 30px;">{{ event_name }}</h2>
+
+  {% for age_group, genders in age_groups.items() %}
+    <h3>{{ age_group }}</h3>
+
+    {% for gender, swimmers in genders.items() %}
+      <h4>{{ gender }}</h4>
+      <table border="1" cellpadding="10" cellspacing="0">
+        <thead>
+    <tr>
+        <th>Name</th>
+        <th>Date of Birth</th>
+        <th>Registered Events</th>
+    </tr>
+</thead>
+<tbody>
+    {% for swimmer in swimmers %}
+    <tr>
+        <td>{{ swimmer.name }}</td>
+        <td>{{ swimmer.dob }}</td>
+        <td>
+            {% if swimmer.registered_events %}
+                <ul style="margin: 0; padding-left: 18px;">
+                    {% for ev in swimmer.registered_events %}
+                        <li>{{ ev }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <em>None</em>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
+
+      </table>
+    {% endfor %}
+  {% endfor %}
+{% endfor %}
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        sidebar.classList.toggle('collapsed');
+    }
+</script>
+{% endblock %}

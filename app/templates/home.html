@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+:root {
+  --bg-base: #f6f2ed;
+  --text-dark: #2b211b;
+  --text-light: #ffffff;
+  --accent-dark: #5e3c31;
+  --accent-mid: #bb6a4d;
+  --border-light: #d8c9b4;
+  --card-bg: #fbf9f6;
+  --shadow-light: rgba(0, 0, 0, 0.06);
+}
+
+body {
+  background-color: var(--bg-base);
+  color: var(--text-dark);
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+}
+
+/* Top Bar */
+.top-bar.with-image {
+  background-color: var(--card-bg);
+  padding: 20px 60px 10px 60px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 44px;
+  font-weight: 700;
+  color: var(--text-dark);
+  text-decoration: none;
+}
+
+.tagline {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--accent-mid);
+  margin-top: 6px;
+}
+
+/* Nav Buttons */
+.nav-buttons a {
+  background-color: var(--accent-mid);
+  color: var(--text-light);
+  border: none;
+  border-radius: 20px;
+  padding: 10px 22px;
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+  margin-left: 10px;
+  box-shadow: 0 4px 8px var(--shadow-light);
+  transition: 0.3s ease-in-out;
+}
+
+.nav-buttons a:hover {
+  background-color: var(--accent-dark);
+  color: var(--text-light);
+  transform: translateY(-2px);
+}
+
+/* Hero Section */
+.hero-photo {
+  position: relative;
+  width: 100%;
+  height: 60vh;
+  overflow: hidden;
+  background-color: #000;
+}
+
+.hero-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: brightness(75%) contrast(110%) saturate(110%);
+}
+
+.hero-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: var(--text-light);
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  padding: 20px;
+  z-index: 2;
+}
+
+.hero-overlay h1 {
+  font-size: 56px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.hero-overlay p {
+  font-size: 18px;
+  font-weight: 400;
+  color: #f3eee9;
+}
+
+/* Section Wrapper */
+.section-wrapper {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 60px 30px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.section-wrapper h2 {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--accent-dark);
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 8px;
+}
+
+/* Card */
+.card-box {
+  background-color: var(--card-bg);
+  border-radius: 14px;
+  padding: 28px;
+  border: 1px solid var(--border-light);
+  box-shadow: 0 6px 12px var(--shadow-light);
+}
+
+/* Events */
+.event-item {
+  border-left: 4px solid var(--accent-mid);
+  padding-left: 20px;
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 1px dashed var(--border-light);
+}
+
+/* PDF Button */
+.pdf-button a {
+  background-color: var(--accent-dark);
+  color: var(--text-light);
+  padding: 8px 16px;
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+  border-radius: 8px;
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 10px;
+  transition: 0.3s ease;
+  box-shadow: 0 4px 6px var(--shadow-light);
+}
+
+.pdf-button a:hover {
+  background-color: #2e2622;
+  transform: scale(1.04);
+}
+</style>
+
+<!-- Top Navigation Bar -->
+<div class="top-bar with-image">
+    <div class="header-left">
+        <a href="{{ url_for('home') }}" class="logo">SwimApp</a>
+        <p class="tagline">Organize, manage & celebrate every splash</p>
+    </div>
+    <div class="nav-buttons">
+        <a href="{{ url_for('signup_selection') }}">Sign Up</a>
+        <a href="{{ url_for('login_selection') }}">Log In</a>
+    </div>
+</div>
+
+<!-- Hero Image Section -->
+<section class="hero-photo">
+  <img src="{{ url_for('static', filename='images/pool-fence.jpg') }}" alt="Pool at Night">
+  <div class="hero-overlay">
+    <h1>Every Splash Counts</h1>
+    <p>Late night laps. Quiet moments. Endless possibilities.</p>
+  </div>
+</section>
+
+<!-- Upcoming Events -->
+<div class="section-wrapper">
+    <h2>Upcoming Events</h2>
+    <div class="card-box">
+        {% if published_events %}
+            {% for event in published_events %}
+                <div class="event-item">
+                    <h3>{{ loop.index }}. Event Name: {{ event.name }}</h3>
+                    <p><strong>Dates:</strong> {{ event.start_date.strftime('%d %b %Y') }} to {{ event.end_date.strftime('%d %b %Y') }}</p>
+                    <div class="pdf-button">
+                        <a href="{{ url_for('static', filename='pdfs/event_' ~ event.id ~ '.pdf') }}" target="_blank">Event List</a>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No events have been published yet.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Results & Medal Tally -->
+<div class="section-wrapper">
+    <h2>Results & Medal Tally</h2>
+    <div class="card-box">
+        <p>Coming soon...</p>
+    </div>
+</div>
+
+{% endblock %}

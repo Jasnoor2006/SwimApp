@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  :root {
+    --bg-base: #f5f1ec;
+    --text-dark: #2b1a1a;
+    --accent-main: #a7745b;
+    --accent-hover: #83543a;
+    --card-bg: #fefcfb;
+    --border-light: #e0d7cf;
+    --error-color: #c0392b;
+    --success-color: #27ae60;
+  }
+
+  body {
+    background-color: var(--bg-base);
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .form-container {
+    max-width: 460px;
+    margin: 80px auto;
+    padding: 35px 30px;
+    background-color: var(--card-bg);
+    border-radius: 16px;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border-light);
+  }
+
+  .form-container h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    color: var(--accent-main);
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  .form-group {
+    margin-bottom: 24px;
+  }
+
+  label {
+    font-weight: 600;
+    color: var(--text-dark);
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border-light);
+    font-size: 15px;
+    font-family: 'Poppins', sans-serif;
+    box-sizing: border-box;
+  }
+
+  .text-danger {
+    color: var(--error-color);
+    font-size: 13px;
+    margin-top: 5px;
+  }
+
+  .btn-primary {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--accent-main);
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--accent-hover);
+  }
+
+  .alert {
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  .alert-success {
+    background-color: #eafaf1;
+    color: var(--success-color);
+    border: 1px solid #c3e6cb;
+  }
+
+  .alert-danger {
+    background-color: #fff1f0;
+    color: var(--error-color);
+    border: 1px solid #f5c6cb;
+  }
+</style>
+<div class="form-container">
+    <h2>Enter Verification Code</h2>
+
+    <!-- Display flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+        {{ form.hidden_tag() }}
+
+        <div class="form-group">
+            {{ form.code.label }}
+            {{ form.code(class="form-control", size=30) }}
+            {% if form.code.errors %}
+                <small class="text-danger">{{ form.code.errors[0] }}</small>
+            {% endif %}
+        </div>
+
+        <button type="submit" class="btn btn-primary">Verify</button>
+    </form>
+</div>
+{% endblock %}

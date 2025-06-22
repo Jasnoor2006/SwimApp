@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    body {
+        background-color: #fefaf6;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .login-container {
+        max-width: 440px;
+        margin: 80px auto;
+        background-color: #fffdfb;
+        padding: 48px 36px;
+        border-radius: 16px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+        border: 1px solid #e4dcd2;
+    }
+
+    .login-container h2 {
+        text-align: center;
+        font-family: 'Playfair Display', serif;
+        font-size: 28px;
+        color: #2e2018;
+        margin-bottom: 30px;
+    }
+
+    .form-group {
+        margin-bottom: 22px;
+        text-align: left;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 600;
+        font-size: 15px;
+        color: #3e3e3e;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+        width: 100%;
+        padding: 12px;
+        font-size: 15px;
+        background-color: #e9f0ff;
+        border: 1px solid #d9d2ca;
+        border-radius: 10px;
+        transition: border 0.3s ease;
+        box-sizing: border-box;
+    }
+
+    input[type="text"]:focus,
+    input[type="password"]:focus {
+        border-color: #a7745b;
+        outline: none;
+    }
+
+    .btn-login {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(to right, #8b5e3c, #c9966b);
+        color: white;
+        border: none;
+        border-radius: 32px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+    .btn-login:hover {
+        background: linear-gradient(to right, #6c4024, #a97654);
+        transform: scale(1.02);
+    }
+
+    .back-link {
+        display: inline-block;
+        margin-top: 30px;
+        color: #a7745b;
+        font-weight: 600;
+        font-size: 16px;
+        text-decoration: none;
+        transition: color 0.3s ease;
+        text-align: center;
+        width: 100%;
+    }
+
+    .back-link:hover {
+        color: #83543a;
+        text-decoration: underline;
+    }
+
+    .text-danger {
+        font-size: 13px;
+        color: #c0392b;
+    }
+</style>
+
+<div class="login-container">
+    <h2>Swimmer Login</h2>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+
+        <div class="form-group">
+            {{ form.username.label }}
+            {{ form.username(class="form-control") }}
+            {% if form.username.errors %}
+                <small class="text-danger">{{ form.username.errors[0] }}</small>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.password.label }}
+            {{ form.password(class="form-control") }}
+            {% if form.password.errors %}
+                <small class="text-danger">{{ form.password.errors[0] }}</small>
+            {% endif %}
+        </div>
+
+        {{ form.submit(class="btn-login") }}
+    </form>
+
+    <div style="text-align: center;">
+        <a class="back-link" href="{{ url_for('home') }}">← Back to Home</a>
+    </div>
+</div>
+{% endblock %}

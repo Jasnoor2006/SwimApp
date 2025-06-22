@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  :root {
+    --accent-main: #a7745b;
+    --accent-hover: #83543a;
+    --bg-card: #fefaf6;
+    --text-dark: #2b1a1a;
+    --border-light: #e0d7cf;
+  }
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--bg-card);
+  }
+
+  .reschedule-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 90vh;
+    padding: 20px;
+  }
+
+  .reschedule-card {
+    background: white;
+    padding: 50px 40px;
+    border-radius: 20px;
+    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--border-light);
+    max-width: 480px;
+    width: 100%;
+  }
+
+  .reschedule-card h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    color: var(--text-dark);
+    text-align: center;
+    margin-bottom: 32px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  label {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+    margin-top: 20px;
+    align-self: flex-start;
+  }
+
+  input[type="date"] {
+    width: 100%;
+    max-width: 300px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-family: 'Poppins', sans-serif;
+    border: 1px solid var(--border-light);
+    background-color: #fcfcfa;
+    box-sizing: border-box;
+  }
+
+  .form-actions {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .btn-submit {
+    background: linear-gradient(to right, #8b5e3c, #c9966b);
+    color: white;
+    padding: 12px 28px;
+    font-size: 15px;
+    font-weight: 600;
+    border: none;
+    border-radius: 40px;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+  }
+
+  .btn-submit:hover {
+    background: linear-gradient(to right, #6c4024, #a97654);
+    transform: scale(1.02);
+  }
+
+  .btn-cancel {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--accent-main);
+    text-decoration: none;
+    align-self: center;
+    padding-top: 12px;
+  }
+
+  .btn-cancel:hover {
+    color: var(--accent-hover);
+    text-decoration: underline;
+  }
+</style>
+
+<div class="reschedule-container">
+  <div class="reschedule-card">
+    <h2>📅 Reschedule Event</h2>
+
+  <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <label>New Start Date:</label>
+<input type="text" name="start_date" value="{{ start_date }}" placeholder="DD/MM/YYYY" required>
+
+<label>New End Date:</label>
+<input type="text" name="end_date" value="{{ end_date }}" placeholder="DD/MM/YYYY" required>
+
+    <div style="margin-top: 30px;">
+      <button type="submit" class="btn-submit">Update Dates</button>
+      <a href="{{ url_for('published_events') }}" class="btn-cancel">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

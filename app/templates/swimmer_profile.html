@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+:root {
+  --bg-base: #f5f1ec;
+  --text-dark: #2b1a1a;
+  --text-light: #ffffff;
+  --accent-main: #a7745b;
+  --accent-hover: #83543a;
+  --card-bg: #fefcfb;
+  --border-light: #e0d7cf;
+  --sidebar-dark: #40342d;
+  --sidebar-accent: #a2826e;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg-base);
+  font-family: 'Poppins', sans-serif;
+}
+
+.wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+.toggle-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background-color: var(--accent-main);
+  color: white;
+  font-size: 22px;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  z-index: 1001;
+}
+
+.sidebar {
+  width: 250px;
+  background-color: var(--sidebar-dark);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 999;
+  transition: transform 0.3s ease-in-out;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-header img {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 15px;
+}
+
+.sidebar-header strong {
+  font-size: 14px;
+}
+
+.sidebar a {
+  color: white;
+  text-decoration: none;
+  padding: 16px 22px;
+  font-weight: 500;
+  transition: background 0.3s ease;
+}
+
+.sidebar a:hover {
+  background-color: var(--sidebar-accent);
+}
+
+.main-content {
+  margin-left: 250px;
+  padding: 40px 30px;
+  flex: 1;
+  transition: margin-left 0.3s ease-in-out;
+}
+
+.profile-container {
+  background-color: var(--card-bg);
+  padding: 30px;
+  border-radius: 16px;
+  max-width: 900px;
+  margin: auto;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-light);
+}
+
+.profile-container h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.profile-field {
+  margin-bottom: 18px;
+}
+
+.profile-label {
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: var(--text-dark);
+}
+
+.profile-value {
+  color: #333;
+  font-size: 15px;
+  margin-top: 6px;
+}
+
+input[type="text"], input[type="date"], textarea, select {
+  padding: 10px;
+  font-size: 15px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  width: 100%;
+  margin-top: 6px;
+}
+
+input[type="file"] {
+  margin-top: 6px;
+}
+
+button.save-btn, .edit-btn {
+  background-color: var(--accent-main);
+  color: white;
+  padding: 10px 16px;
+  font-size: 15px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 20px;
+  text-decoration: none;
+  display: inline-block;
+}
+
+button.save-btn:hover, .edit-btn:hover {
+  background-color: var(--accent-hover);
+}
+</style>
+
+<button id="sidebarToggle" class="toggle-btn" onclick="toggleSidebar()">☰</button>
+
+<div class="wrapper">
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="https://via.placeholder.com/44" alt="Swimmer">
+      <div>
+        <strong>{{ swimmer.name }}</strong><br>
+        <small>Swimmer</small>
+      </div>
+    </div>
+    <a href="{{ url_for('swimmer_dashboard') }}">Dashboard</a>
+    <a href="{{ url_for('swimmer_profile') }}">Profile</a>
+    <a href="{{ url_for('logout') }}">Logout</a>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="profile-container">
+      
+<h2>
+  Swimmer Profile
+  {% if not edit %}
+    <a href="{{ url_for('swimmer_profile') }}?edit=true" class="edit-btn">Edit</a>
+  {% endif %}
+</h2>
+
+{% if edit %}
+<form method="POST" enctype="multipart/form-data">
+  {{ form.hidden_tag() }}
+
+  {% for field in [form.name, form.email, form.phone, form.gender] %}
+    <div class="profile-field">
+      <div class="profile-label">{{ field.label.text }}</div>
+      {{ field() }}
+    </div>
+  {% endfor %}
+
+  <!-- ✅ Custom Date of Birth Input -->
+  <div class="profile-field">
+  <div class="profile-label">{{ form.dob.label.text }}</div>
+  <input type="date" name="dob" value="{% if form.dob.data %}{{ form.dob.data.strftime('%Y-%m-%d') }}{% endif %}" class="form-control">
+</div>
+
+{% for field in [form.emergency_name, form.emergency_contact, form.address, form.sfi_number, form.aadhaar_file, form.sfi_file] %}
+        <div class="profile-field">
+          <div class="profile-label">{{ field.label.text }}</div>
+          {{ field() }}
+        </div>
+        {% endfor %}
+
+       
+  <button type="submit" class="save-btn">Save Profile</button>
+</form>
+
+      {% else %}
+        <div class="profile-field"><div class="profile-label">Name</div><div class="profile-value">{{ swimmer.name }}</div></div>
+        <div class="profile-field"><div class="profile-label">Email</div><div class="profile-value">{{ swimmer.email }}</div></div>
+        <div class="profile-field"><div class="profile-label">Phone</div><div class="profile-value">{{ swimmer.phone }}</div></div>
+        <div class="profile-field"><div class="profile-label">Gender</div><div class="profile-value">{{ swimmer.gender }}</div></div>
+        <div class="profile-field">
+  <div class="profile-label">Date of Birth</div>
+  <div class="profile-value">
+    {% if swimmer.dob %}
+      {% if swimmer.dob.__class__.__name__ == 'datetime' %}
+        {{ swimmer.dob.strftime('%d/%m/%Y') }}
+      {% else %}
+        {{ swimmer.dob[:10].split('-')[2] }}/{{ swimmer.dob[:10].split('-')[1] }}/{{ swimmer.dob[:10].split('-')[0] }}
+      {% endif %}
+    {% else %}
+      -
+    {% endif %}
+  </div>
+</div>
+
+
+
+        <div class="profile-field"><div class="profile-label">Emergency Contact Name</div><div class="profile-value">{{ swimmer.emergency_name }}</div></div>
+        <div class="profile-field"><div class="profile-label">Emergency Contact Number</div><div class="profile-value">{{ swimmer.emergency_contact }}</div></div>
+        <div class="profile-field"><div class="profile-label">Address</div><div class="profile-value">{{ swimmer.address }}</div></div>
+        <div class="profile-field"><div class="profile-label">SFI Number</div><div class="profile-value">{{ swimmer.sfi_number }}</div></div>
+        <div class="profile-field"><div class="profile-label">Aadhaar</div><div class="profile-value">{% if swimmer.aadhaar_file %}<a href="{{ url_for('static', filename='uploads/' ~ swimmer.aadhaar_file) }}" target="_blank">View</a>{% else %}-{% endif %}</div></div>
+        <div class="profile-field"><div class="profile-label">SFI Document</div><div class="profile-value">{% if swimmer.sfi_file %}<a href="{{ url_for('static', filename='uploads/' ~ swimmer.sfi_file) }}" target="_blank">View</a>{% else %}-{% endif %}</div></div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    sidebar.classList.toggle('collapsed');
+  }
+</script>
+{% endblock %}

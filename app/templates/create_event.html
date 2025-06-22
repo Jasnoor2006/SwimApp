@@ -1,0 +1,302 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+:root {
+  --bg-base: #f5f1ec;
+  --text-dark: #2b1a1a;
+  --text-light: #ffffff;
+  --accent-main: #a7745b;
+  --accent-hover: #83543a;
+  --card-bg: #fefcfb;
+  --border-light: #e0d7cf;
+  --sidebar-dark: #40342d;
+  --sidebar-accent: #a2826e;
+}
+
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--bg-base);
+  color: var(--text-dark);
+}
+
+.wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Toggle Button */
+.toggle-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background-color: var(--accent-main);
+  color: white;
+  font-size: 22px;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  z-index: 1001;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 250px;
+  background-color: var(--sidebar-dark);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 999;
+  transition: transform 0.3s ease-in-out;
+}
+
+.sidebar.collapsed {
+  transform: translateX(-100%);
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-header img {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 15px;
+}
+
+.sidebar-header strong {
+  font-size: 14px;
+}
+
+.sidebar a {
+  color: white;
+  text-decoration: none;
+  padding: 16px 22px;
+  font-weight: 500;
+  transition: background 0.3s ease;
+}
+
+.sidebar a:hover {
+  background-color: var(--sidebar-accent);
+}
+
+/* Main Content */
+.main-content {
+  margin-left: 250px;
+  flex: 1;
+  padding: 40px 30px;
+  transition: margin-left 0.3s ease-in-out;
+}
+
+.sidebar.collapsed + .main-content {
+  margin-left: 0;
+}
+
+/* Form Container */
+.form-container {
+  background-color: var(--card-bg);
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-light);
+  max-width: 800px;
+  margin: auto;
+}
+
+.form-container h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px;
+  color: var(--text-dark);
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+.form-container label {
+  font-weight: 600;
+  display: block;
+  margin-top: 18px;
+  margin-bottom: 6px;
+  font-size: 15px;
+  color: #3a2c28;
+}
+
+.form-control,
+.form-container input[type="text"],
+.form-container input[type="date"] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 15px;
+  background-color: white;
+  margin-bottom: 10px;
+}
+
+/* Checkbox & Radio Groups */
+.form-container .checkboxes label {
+  font-weight: normal;
+  margin-right: 15px;
+  font-size: 14px;
+  color: #333;
+}
+
+/* Submit Button */
+.form-container button[type="submit"],
+#addAnotherBtn {
+  margin-top: 24px;
+  background: linear-gradient(to right, var(--accent-main), var(--accent-hover));
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.form-container button:hover,
+#addAnotherBtn:hover {
+  background: linear-gradient(to right, var(--accent-hover), #5c3e2c);
+  transform: scale(1.02);
+}
+
+#addAnotherBtn {
+  background-color: #a2826e;
+  width: auto;
+  margin-top: 10px;
+  padding: 8px 14px;
+  font-size: 14px;
+}
+</style>
+
+<!-- Sidebar Toggle Button -->
+<button id="sidebarToggle" class="toggle-btn" onclick="toggleSidebar()">☰</button>
+
+<div class="wrapper">
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="https://via.placeholder.com/40" alt="Organizer">
+            <div class="name-role">
+                <strong>{{ current_user.person_name }}</strong><br>
+                <small>Organizer</small>
+            </div>
+        </div>
+        <a href="{{ url_for('organizer_profile') }}">Profile</a>
+        <a href="{{ url_for('organizer_dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('events') }}">Events</a>
+        <a href="#">View Registered Swimmers</a>
+        <a href="#">Upload Results</a>
+        <a href="#">View Medal Tally</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <div class="form-container">
+            <h2>Create New Event</h2>
+            <form method="POST" action="{{ url_for('create_event') }}">
+                {{ form.hidden_tag() }}
+
+                <label for="association_name">Association Name:</label>
+                {{ form.association_name(class="form-control") }}
+
+                <label for="event_name">Event Name:</label>
+                {{ form.event_name(class="form-control") }}
+
+                <label for="place">Place:</label>
+                {{ form.place(class="form-control") }}
+
+                <label for="start_date">Start Date:</label>
+                {{ form.start_date(class="form-control date-field", type="text") }}
+
+                <label for="end_date">End Date:</label>
+                {{ form.end_date(class="form-control date-field", type="text") }}
+
+                <label>Age Groups:</label>
+                <div class="checkboxes">
+                    {% for value, label in form.age_groups.choices %}
+                        <label>
+                            <input type="checkbox" name="{{ form.age_groups.name }}" value="{{ value }}"
+       {% if value in (form.age_groups.data or session.get('age_groups', [])) %}checked{% endif %}>
+
+                            {{ label }}
+                        </label>
+                    {% endfor %}
+                </div>
+
+                <label>Meet Level:</label>
+                <div class="checkboxes">
+                    {% for value, label in form.meet_levels.choices %}
+                        <label>
+                            <input type="radio" name="{{ form.meet_levels.name }}" value="{{ value }}"
+       {% if form.meet_levels.data == value or session.get('level') == value %}checked{% endif %}>
+
+                            {{ label }}
+                        </label>
+                    {% endfor %}
+                </div>
+
+                <!-- Custom Age Group Input (if needed later) -->
+                <div id="customAgeGroups" style="margin-top: 10px;"></div>
+                <button type="button" id="addAnotherBtn"
+                        onclick="addCustomAgeGroupInput()"
+                        style="display: none; margin-top: 10px; background-color: #888; color: white; padding: 8px 12px; border: none; border-radius: 5px;">
+                    + Add Another Custom Age Group
+                </button>
+
+                <label for="registration_start_date">Registration Start Date:</label>
+                {{ form.registration_start_date(class="form-control date-field", type="text") }}
+
+                <label for="registration_end_date">Registration End Date:</label>
+                {{ form.registration_end_date(class="form-control date-field", type="text") }}
+                <label for="max_individual_events">Max Individual Events per Swimmer:</label>
+                {{ form.max_individual_events(class="form-control", type="number", min="1") }}
+
+
+                <button type="submit" name="action" value="next">Next →</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        sidebar.classList.toggle('collapsed');
+    }
+
+    function addCustomAgeGroupInput() {
+        const container = document.getElementById("customAgeGroups");
+        const input = document.createElement("input");
+        input.type = "text";
+        input.name = "custom_age_groups";
+        input.placeholder = "Enter custom age group";
+        input.className = "form-control";
+        input.style.marginTop = "10px";
+        container.appendChild(input);
+    }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+  flatpickr(".date-field", {
+    altInput: true,
+    altFormat: "d/m/Y",   // what user sees
+    dateFormat: "Y-m-d"   // what is submitted to Flask
+  });
+</script>
+{% endblock %}

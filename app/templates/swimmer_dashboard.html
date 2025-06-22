@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+:root {
+  --bg-base: #f5f1ec;
+  --text-dark: #2b1a1a;
+  --accent-main: #a7745b;
+  --accent-hover: #83543a;
+  --card-bg: #fefcfb;
+  --border-light: #e0d7cf;
+  --sidebar-dark: #40342d;
+  --sidebar-accent: #a2826e;
+}
+
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--bg-base);
+  color: var(--text-dark);
+}
+
+.wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+.toggle-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background-color: var(--accent-main);
+  color: white;
+  font-size: 22px;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  z-index: 1001;
+}
+
+.sidebar {
+  width: 250px;
+  background-color: var(--sidebar-dark);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 999;
+  transition: transform 0.3s ease-in-out;
+}
+
+.sidebar.collapsed {
+  transform: translateX(-100%);
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-header img {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 15px;
+}
+
+.sidebar-header strong {
+  font-size: 14px;
+}
+
+.sidebar a {
+  color: white;
+  text-decoration: none;
+  padding: 16px 22px;
+  font-weight: 500;
+  transition: background 0.3s ease;
+}
+
+.sidebar a:hover {
+  background-color: var(--sidebar-accent);
+}
+
+.main-content {
+  margin-left: 250px;
+  padding: 40px 30px;
+  flex: 1;
+  transition: margin-left 0.3s ease-in-out;
+}
+
+.sidebar.collapsed + .main-content {
+  margin-left: 0;
+}
+
+.dashboard-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  padding: 30px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.dashboard-card h3 {
+  font-size: 20px;
+  color: var(--accent-main);
+  margin-bottom: 14px;
+  font-weight: 600;
+}
+
+.dashboard-card p {
+  margin-bottom: 10px;
+  font-size: 15px;
+}
+
+.event-list {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 8px;
+}
+
+.event-list li {
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed var(--border-light);
+}
+
+.swimmer-pdf-btn {
+  background-color: #5e3c31;
+  color: #ffffff;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+  border-radius: 10px;
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 10px;
+  font-weight: 500;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  transition: 0.3s ease-in-out;
+}
+
+.swimmer-pdf-btn:hover {
+  background-color: #3f2a23;
+  transform: scale(1.04);
+}
+
+</style>
+<button id="sidebarToggle" class="toggle-btn" onclick="toggleSidebar()">☰</button>
+
+<div class="wrapper">
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="https://via.placeholder.com/40" alt="Swimmer">
+      <div class="name-role">
+        <strong>{{ swimmer.name }}</strong><br>
+        <small>Swimmer</small>
+      </div>
+    </div>
+    <a href="{{ url_for('swimmer_dashboard') }}">Dashboard</a>
+    <a href="{{ url_for('swimmer_profile') }}">Profile</a>
+    <a href="{{ url_for('logout') }}">Logout</a>
+  </div>
+
+<div class="main-content" id="mainContent">
+  <h2 style="font-family: 'Playfair Display', serif; font-size: 28px; margin-bottom: 30px;">Welcome, {{ swimmer.name }}!
+</h2>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 30px;">
+    <!-- Upcoming Events -->
+    <div class="dashboard-card" style="flex: 1 1 100%;">
+      <h3> Upcoming Events</h3>
+      {% if events %}
+        <ul class="event-list">
+          {% for event in events %}
+            <li>
+              <div style="margin-bottom: 4px;">
+                <strong style="font-size: 16px;">{{ event.full_title }}</strong>
+
+              </div>
+              <div style="font-size: 14px; color: #5e4a3d;">
+                
+                <p><strong>Registration:</strong> {{ event.registration_start_date.strftime('%d %b %Y') }} to {{ event.registration_end_date.strftime('%d %b %Y') }}</p>
+                {% set today = current_time.date() %}
+{% if event.registration_start_date <= today <= event.registration_end_date %}
+  <p style="color: green;"><strong>Registration Status:</strong> Open</p>
+    <a href="{{ url_for('meet_register', event_id=event.id) }}" class="swimmer-pdf-btn" style="background-color: #388e3c; margin-top: 8px;">
+  Register
+</a>
+
+{% elif today < event.registration_start_date %}
+  <p style="color: orange;"><strong>Registration Status:</strong> Not yet started</p>
+{% else %}
+  <p style="color: red;"><strong>Registration Status:</strong> Closed</p>
+{% endif %}
+
+              </div>
+              <a href="{{ url_for('view_event_pdf', event_id=event.id) }}" target="_blank" class="swimmer-pdf-btn">
+                 Event List
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>You have no upcoming events.</p>
+      {% endif %}
+    </div>
+
+    <!-- Registered Meets -->
+    <div class="dashboard-card" style="flex: 1 1 100%;">
+      <h3> Registered Meets</h3>
+      <p>You haven’t registered for any meets yet.</p>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+    sidebar.classList.toggle('collapsed');
+  }
+</script>
+{% endblock %}

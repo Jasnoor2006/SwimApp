@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+/* Inherit your CSS variables */
+:root {
+  --bg-base: #f5f1ec;
+  --text-dark: #2b1a1a;
+  --text-light: #ffffff;
+  --accent-main: #a7745b;
+  --accent-hover: #83543a;
+  --card-bg: #fefcfb;
+  --border-light: #e0d7cf;
+  --sidebar-dark: #40342d;
+  --sidebar-accent: #a2826e;
+}
+
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--bg-base);
+}
+
+.wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+.toggle-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background-color: var(--accent-main);
+  color: white;
+  border: none;
+  font-size: 22px;
+  border-radius: 10px;
+  padding: 10px 14px;
+  z-index: 1001;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 250px;
+  background-color: var(--sidebar-dark);
+  color: var(--text-light);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 999;
+  transition: transform 0.3s ease-in-out;
+}
+
+.sidebar.collapsed {
+  transform: translateX(-100%);
+}
+
+.sidebar-header {
+  padding: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+}
+
+.sidebar-header img {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  margin-right: 15px;
+  object-fit: cover;
+}
+
+.sidebar-header .name-role {
+  font-size: 14px;
+}
+
+.sidebar a {
+  color: var(--text-light);
+  text-decoration: none;
+  padding: 16px 22px;
+  font-weight: 500;
+  transition: background 0.3s ease;
+}
+
+.sidebar a:hover {
+  background-color: var(--sidebar-accent);
+}
+
+/* Main content */
+.main-content {
+  margin-left: 250px;
+  flex: 1;
+  padding: 40px 30px;
+  transition: margin-left 0.3s ease-in-out;
+}
+
+.sidebar.collapsed + .main-content {
+  margin-left: 0;
+}
+
+.dashboard-container {
+  background-color: var(--card-bg);
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-light);
+}
+
+.dashboard-container h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px;
+  color: var(--text-dark);
+  margin-bottom: 18px;
+}
+
+.dashboard-container p {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 20px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+th, td {
+  border: 1px solid var(--border-light);
+  padding: 14px 16px;
+  text-align: left;
+}
+
+th {
+  background-color: var(--accent-main);
+  color: white;
+  font-weight: 600;
+}
+
+tr:nth-child(even) {
+  background-color: #f9f6f2;
+}
+
+tr:hover {
+  background-color: #f1e8e1;
+}
+
+footer {
+  margin-top: 40px;
+  text-align: center;
+  font-size: 0.9em;
+  color: #888;
+}
+</style>
+
+<!-- Sidebar Toggle -->
+<button id="sidebarToggle" class="toggle-btn" onclick="toggleSidebar()">☰</button>
+
+<div class="wrapper">
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="{{ url_for('static', filename=admin_picture) }}" alt="Admin">
+      <div class="name-role">
+        <strong>{{ admin_name }}</strong><br>
+        <small>Admin</small>
+      </div>
+    </div>
+    <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+    <a href="{{ url_for('admin_profile') }}">Profile</a>
+    <a href="{{ url_for('admin_swimmers') }}">View Registered Swimmers</a>
+    <a href="{{ url_for('logout') }}">Logout</a>
+  </div>
+
+  <div class="main-content" id="mainContent">
+    <div class="dashboard-container">
+      <h2>👤 Registered Swimmers</h2>
+      <p>Here you can view all swimmers who have signed up to participate in events. Contact information includes either email or phone.</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Username</th>
+            <th>Contact</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in swimmers %}
+          <tr>
+            <td>{{ s.name }}</td>
+            <td>{{ s.username }}</td>
+            <td>
+              {% if s.email %}
+                {{ s.email }}
+              {% elif s.phone %}
+                {{ s.phone }}
+              {% else %}
+                Not Provided
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <footer>• SwimApp Admin Panel •</footer>
+  </div>
+</div>
+
+<script>
+  function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+    sidebar.classList.toggle('collapsed');
+  }
+</script>
+{% endblock %}

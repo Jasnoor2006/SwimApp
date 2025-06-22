@@ -1,0 +1,36 @@
+[
+    {
+        "event_name": "a",
+        "place": "a",
+        "start_date": "11/02/2023",
+        "end_date": "13/02/2023",
+        "age_groups": [
+            "senior_men",
+            "senior_women"
+        ],
+        "published_at": "2025-06-13 08:16:10"
+    },
+    {
+        "event_name": "a",
+        "place": "a",
+        "start_date": "11/02/2023",
+        "end_date": "13/02/2023",
+        "age_groups": [
+            "senior_men",
+            "u19_boys"
+        ],
+        "published_at": "2025-06-13 14:42:16"
+    },
+    {
+        "event_name": "a",
+        "place": "a",
+        "start_date": "11/02/2023",
+        "end_date": "12/02/2023",
+        "age_groups": [
+            "senior_men",
+            "u12_girls"
+        ],
+        "published_at": "2025-06-13 14:51:37",
+        "pdf_path": "static/pdfs/a_summary.pdf"
+    }
+]

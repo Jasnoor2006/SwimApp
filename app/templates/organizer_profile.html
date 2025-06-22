@@ -1,0 +1,333 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+:root {
+  --bg-base: #f5f1ec;
+  --text-dark: #2b1a1a;
+  --text-light: #ffffff;
+  --accent-main: #a7745b;
+  --accent-hover: #83543a;
+  --card-bg: #fefcfb;
+  --border-light: #e0d7cf;
+  --sidebar-dark: #40342d;
+  --sidebar-accent: #a2826e;
+}
+
+.edit-profile-btn {
+  background: linear-gradient(to right, #a7745b, #83543a);
+  color: white;
+  padding: 8px 16px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  font-weight: 600;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.edit-profile-btn:hover {
+  background: linear-gradient(to right, #8b5c44, #6e3f2c);
+  transform: scale(1.03);
+}
+
+.edit-profile-btn img {
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg-base);
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Layout */
+.wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Toggle Button */
+.toggle-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background-color: var(--accent-main);
+  color: white;
+  font-size: 22px;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  z-index: 1001;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 250px;
+  background-color: var(--sidebar-dark);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 999;
+  transition: transform 0.3s ease-in-out;
+}
+
+.sidebar.collapsed {
+  transform: translateX(-100%);
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-header img {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 15px;
+}
+
+.sidebar-header strong {
+  font-size: 14px;
+}
+
+.sidebar a {
+  color: white;
+  text-decoration: none;
+  padding: 16px 22px;
+  font-weight: 500;
+  transition: background 0.3s ease;
+}
+
+.sidebar a:hover {
+  background-color: var(--sidebar-accent);
+}
+
+/* Main Content */
+.main-content {
+  margin-left: 250px;
+  padding: 40px 30px;
+  flex: 1;
+  transition: margin-left 0.3s ease-in-out;
+}
+
+.sidebar.collapsed + .main-content {
+  margin-left: 0;
+}
+
+/* Card Container */
+.dashboard-container {
+  background-color: var(--card-bg);
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-light);
+}
+
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px;
+  color: var(--text-dark);
+  margin-bottom: 30px;
+}
+
+/* Profile Fields */
+.profile-field {
+  margin-bottom: 25px;
+}
+
+.profile-label {
+  font-weight: 600;
+  color: #444;
+  font-size: 15px;
+  margin-bottom: 6px;
+}
+
+.profile-value {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.profile-value span {
+  font-weight: 400 !important;
+  color: #333;
+}
+
+
+
+.edit-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  margin-left: 10px;
+  transition: transform 0.2s;
+}
+
+.edit-btn:hover {
+  transform: scale(1.1);
+}
+
+.edit-input {
+  display: none;
+  margin-top: 10px;
+}
+
+.edit-input input {
+  padding: 10px 12px;
+  font-size: 15px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  width: 60%;
+  margin-right: 12px;
+}
+
+.save-btn {
+  background: linear-gradient(to right, var(--accent-main), var(--accent-hover));
+  color: white;
+  padding: 8px 16px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+.save-btn:hover {
+  background: linear-gradient(to right, var(--accent-hover), #5c3e2c);
+}
+</style>
+<button id="sidebarToggle" class="toggle-btn" onclick="toggleSidebar()">☰</button>
+
+<div class="wrapper">
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="https://via.placeholder.com/44" alt="Organizer">
+      <div>
+        <strong>{{ current_user.person_name }}</strong><br>
+        <small>Organizer</small>
+      </div>
+    </div>
+    
+    <a href="{{ url_for('organizer_profile') }}">Profile</a>
+    <a href="{{ url_for('organizer_dashboard') }}">Dashboard</a>
+    <a href="{{ url_for('events') }}">Events</a>
+    <a href="{{ url_for('view_registered_swimmers') }}">View Registered Swimmers</a>
+    <a href="#">Upload Results</a>
+    <a href="#">View Medal Tally</a>
+    <a href="{{ url_for('logout') }}">Logout</a>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content" id="mainContent">
+    <div class="dashboard-container">
+      <h2 class="section-title">Organizer Profile</h2>
+
+      <form method="POST">
+  {{ form.hidden_tag() }}
+
+  <!-- Edit Profile Button -->
+  <div style="text-align: right; margin-bottom: 20px;">
+    <button type="button" class="edit-profile-btn" onclick="toggleAllEdits()">
+      ✏️ Edit Profile
+    </button>
+  </div>
+
+  <!-- Field Block Template -->
+  <div class="profile-field">
+    <div class="profile-label">Name</div>
+    <div class="profile-value editable-field" id="display-person_name">
+  <span>{{ form.person_name.data }}</span>
+</div>
+<div class="edit-input" id="edit-person_name">
+  {{ form.person_name() }}
+</div>
+
+  </div>
+
+  <div class="profile-field">
+    <div class="profile-label">Association</div>
+    <div class="profile-value editable-field" id="display-association_name">
+      <span>{{ form.association_name.data }}</span>
+    </div>
+    <div class="edit-input" id="edit-association_name" style="display: none;">
+      {{ form.association_name(class="form-control") }}
+    </div>
+  </div>
+
+  <div class="profile-field">
+    <div class="profile-label">Email</div>
+    <div class="profile-value editable-field" id="display-email">
+      <span>{{ form.email.data }}</span>
+    </div>
+    <div class="edit-input" id="edit-email" style="display: none;">
+      {{ form.email(class="form-control") }}
+    </div>
+  </div>
+
+  <div class="profile-field">
+    <div class="profile-label">Contact</div>
+    <div class="profile-value editable-field" id="display-contact">
+      <span>{{ form.contact.data }}</span>
+    </div>
+    <div class="edit-input" id="edit-contact" style="display: none;">
+      {{ form.contact(class="form-control") }}
+    </div>
+  </div>
+
+  <div class="profile-field">
+    <div class="profile-label">Address</div>
+    <div class="profile-value editable-field" id="display-address">
+      <span>{{ form.address.data }}</span>
+    </div>
+    <div class="edit-input" id="edit-address" style="display: none;">
+      {{ form.address(class="form-control") }}
+    </div>
+  </div>
+
+  <!-- Save Button -->
+  <div id="save-button-wrapper" style="text-align: right; display: none;">
+    <button class="save-btn" type="submit" name="submit" value="1">Save Changes</button>
+  </div>
+</form>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    sidebar.classList.toggle('collapsed');
+  }
+
+  function toggleAllEdits() {
+    const fields = ['person_name', 'email', 'association_name', 'contact', 'address'];
+
+
+    fields.forEach(field => {
+      document.getElementById(`edit-${field}`).style.display = 'block';
+      document.getElementById(`display-${field}`).style.display = 'none';
+    });
+
+    document.getElementById('save-button-wrapper').style.display = 'block';
+  }
+</script>
+{% endblock %}

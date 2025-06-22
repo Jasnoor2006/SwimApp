@@ -1,0 +1,348 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+<style>
+:root {
+  --bg-base: #f5f1ec;
+  --text-dark: #2b1a1a;
+  --text-light: #ffffff;
+  --accent-main: #a7745b;
+  --accent-hover: #83543a;
+  --card-bg: #fefcfb;
+  --border-light: #e0d7cf;
+  --sidebar-dark: #40342d;
+  --sidebar-accent: #a2826e;
+}
+
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--bg-base);
+  color: var(--text-dark);
+}
+select[name="visibility"] {
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+
+.wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+.toggle-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background-color: var(--accent-main);
+  color: white;
+  font-size: 22px;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  z-index: 1001;
+}
+
+.sidebar {
+  width: 250px;
+  background-color: var(--sidebar-dark);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 999;
+  transition: transform 0.3s ease-in-out;
+}
+
+.sidebar.collapsed {
+  transform: translateX(-100%);
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-header img {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 15px;
+}
+
+.sidebar-header strong {
+  font-size: 14px;
+}
+
+.sidebar a {
+  color: white;
+  text-decoration: none;
+  padding: 16px 22px;
+  font-weight: 500;
+  transition: background 0.3s ease;
+}
+
+.sidebar a:hover {
+  background-color: var(--sidebar-accent);
+}
+
+.main-content {
+  margin-left: 250px;
+  flex: 1;
+  padding: 40px 30px;
+  transition: margin-left 0.3s ease;
+}
+
+.sidebar.collapsed + .main-content {
+  margin-left: 0;
+}
+
+.published-container {
+  max-width: 1000px;
+  margin: auto;
+  background: var(--card-bg);
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-light);
+}
+
+h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  color: var(--text-dark);
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 12px;
+}
+
+th {
+  text-align: left;
+  padding: 14px 16px;
+  background-color: #f0e7e0;
+  color: #5a3e2b;
+  font-weight: 600;
+  font-size: 15px;
+  border-radius: 10px;
+}
+
+td {
+  background-color: #fffaf5;
+  padding: 14px 16px;
+  border-radius: 12px;
+  font-size: 15px;
+  color: #333;
+  vertical-align: middle;
+}
+
+tr td:first-child {
+  font-weight: 500;
+}
+
+/* PDF Link */
+a.pdf-link {
+  text-decoration: none;
+  color: var(--accent-main);
+  font-weight: 600;
+}
+
+a.pdf-link:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+}
+
+/* Dropdown */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-toggle {
+  background: var(--accent-main);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  font-size: 18px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 35px;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 150px;
+  z-index: 1000;
+  padding: 10px;
+}
+
+.dropdown-menu form {
+  margin: 0;
+}
+
+.dropdown-menu button {
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  width: 100%;
+  text-align: left;
+  font-size: 14px;
+  color: #5a3e2b;
+  cursor: pointer;
+}
+
+.dropdown-menu button:hover {
+  background-color: #f0e7e0;
+}
+
+.dropdown:hover .dropdown-menu {
+  display: block;
+}
+
+.no-events {
+  text-align: center;
+  color: #555;
+  margin-top: 30px;
+  font-size: 16px;
+}
+.reschedule-btn {
+  background-color: var(--accent-main);
+  color: white;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.3s ease;
+}
+
+.reschedule-btn:hover {
+  background-color: var(--accent-hover);
+}
+
+</style>
+<!-- Sidebar Toggle Button -->
+<button id="sidebarToggle" class="toggle-btn" onclick="toggleSidebar()">☰</button>
+
+<div class="wrapper">
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="https://via.placeholder.com/40" alt="Organizer">
+            <div class="name-role">
+                <strong>{{ current_user.person_name }}</strong><br>
+                <small>Organizer</small>
+            </div>
+        </div>
+        <a href="{{ url_for('organizer_profile') }}">Profile</a>
+        <a href="{{ url_for('organizer_dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('events') }}">Events</a>
+        <a href="{{ url_for('view_registered_swimmers') }}">View Registered Swimmers</a>
+        <a href="#">Upload Results</a>
+        <a href="#">View Medal Tally</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <div class="published-container">
+            <h2>📅 Published Events</h2>
+
+            {% if published_events %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Event Name</th>
+                            <th>Place</th>
+                            <th>Date</th>
+                            <th>Publish</th>
+                            <th>PDF Schedule</th>
+                            <th>Reschedule</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for event in published_events %}
+                        <tr>
+                            <td>{{ event.name }}</td>
+                            <td>{{ event.place }}</td>
+                            <td>{{ event.start_date.strftime('%d %b %Y') }} - {{ event.end_date.strftime('%d %b %Y') }}</td>
+                            <td>
+  {% if event.visibility %}
+    <span style="padding: 6px 12px; border-radius: 12px; background-color: #f3e9e2; color: var(--accent-main); font-weight: 600; font-size: 14px; text-transform: capitalize;">
+      {{ event.visibility }}
+    </span>
+  {% else %}
+    <span style="color: #999;">Not Set</span>
+  {% endif %}
+</td>
+
+
+  
+
+                            <td>
+                                <a href="{{ url_for('view_event_pdf', event_id=event.id) }}" target="_blank" class="pdf-link">📄 View PDF</a>
+                            </td>
+                            <td>
+  {% if event.event_schedule_json %}
+    <a href="{{ url_for('reschedule_event', event_id=event.id) }}" class="reschedule-btn">Reschedule</a>
+
+  {% else %}
+    <span style="color: #999;">No Schedule</span>
+  {% endif %}
+</td>
+                            <td>
+                                <div class="dropdown">
+                                    <button class="dropdown-toggle">⋮</button>
+                                    <div class="dropdown-menu">
+                                        <form method="POST" action="{{ url_for('move_to_draft', event_id=event.id) }}">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button type="submit">Make Draft</button>
+                                        </form>
+                                        <form method="POST" action="{{ url_for('delete_published_event', event_id=event.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" onclick="return confirm('Delete this published event?')"> Delete</button>
+</form>
+
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p class="no-events">No published events yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('collapsed');
+    }
+</script>
+{% endblock %}

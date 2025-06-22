@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="main-content" style="padding: 30px;">
+  <div class="dashboard-container">
+    <h2>Select an Event</h2>
+    <ul>
+      {% for event in events %}
+      <li style="margin-bottom: 10px;">
+        <a href="{{ url_for('view_event_entries', event_id=event.id) }}" style="text-decoration: underline; color: var(--accent-main);">
+          {{ event.name }} ({{ event.start_date.strftime('%d/%m/%Y') }})
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}

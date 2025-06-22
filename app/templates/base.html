@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    
+
+    <meta charset="UTF-8">
+    <title>SwimApp</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+    #flash-container {
+        position: fixed;
+        top: 20px;
+        left: 270px; /* Push it past the sidebar */
+        z-index: 1002;
+        width: calc(100% - 290px); /* keep some space on right too */
+        max-width: 600px;
+        padding: 0 15px;
+    }
+
+    .flash-message {
+        padding: 12px 20px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        font-family: 'Segoe UI', sans-serif;
+        font-size: 15px;
+        font-weight: 500;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        animation: slideDownFadeOut 5s forwards;
+    }
+
+    .success { background-color: #d4edda; color: #155724; }
+    .info { background-color: #cce5ff; color: #004085; }
+    .warning { background-color: #fff3cd; color: #856404; }
+    .danger, .error { background-color: #f8d7da; color: #721c24; }
+
+    @keyframes slideDownFadeOut {
+        0% { opacity: 0; transform: translateY(-20px); }
+        10% { opacity: 1; transform: translateY(0); }
+        90% { opacity: 1; }
+        100% { opacity: 0; transform: translateY(-20px); }
+    }
+    .image-header {
+            background-image: url("/static/images/wave-header.jpg");
+            background-size: cover;
+            background-position: center;
+            height: 200px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+        }
+
+        .image-header-overlay {
+            background: rgba(0, 0, 0, 0.3);
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+        }
+
+        .image-header-overlay h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 42px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .image-header-overlay p {
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 16px;
+            font-weight: 400;
+        }
+</style>
+
+</head>
+<body>
+
+<div id="flash-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash-message {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+</div>
+
+{% block content %}
+{% endblock %}
+
+<script>
+    setTimeout(function() {
+        const flashContainer = document.getElementById('flash-container');
+        if (flashContainer) {
+            flashContainer.style.display = 'none';
+        }
+    }, 5000);  // 5000 milliseconds = 5 seconds
+</script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+  flatpickr("input[type='date']", {
+    dateFormat: "d/m/Y"  // dd/mm/yyyy format
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Organizer Signup</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #fefaf6;
+            --card: #ffffff;
+            --text-main: #2b1a1a;
+            --text-muted: #555;
+            --accent: #a7745b;
+            --accent-hover: #83543a;
+            --shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .signup-container {
+            background-color: var(--card);
+            padding: 50px 40px;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 480px;
+        }
+
+        .signup-container h2 {
+            font-family: 'Playfair Display', serif;
+            text-align: center;
+            font-size: 28px;
+            color: var(--text-main);
+            margin-bottom: 30px;
+        }
+
+        form p {
+            margin-bottom: 18px;
+            font-size: 14px;
+        }
+
+        label {
+            font-weight: 500;
+            display: block;
+            margin-bottom: 6px;
+            color: var(--text-main);
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 15px;
+            background-color: #f9f9f9;
+            box-sizing: border-box;
+        }
+
+        .form-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-top: 30px;
+        }
+
+        .form-buttons input[type="submit"] {
+            width: 100%;
+            padding: 14px;
+            text-align: center;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            background: linear-gradient(to right, var(--accent), var(--accent-hover));
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        .form-buttons input[type="submit"]:hover {
+            background: linear-gradient(to right, #996147, #6e402b);
+            transform: scale(1.02);
+        }
+
+        .back-home-wrapper {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-home {
+            display: inline-block;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--accent);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .back-home:hover {
+            color: var(--accent-hover);
+        }
+
+        .back-home::before {
+            content: "←";
+            margin-right: 8px;
+        }
+
+        ul {
+            padding-left: 20px;
+            color: #c0392b;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="signup-container">
+        <h2>Organizer Signup</h2>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <ul>
+              {% for category, message in messages %}
+                <li><strong>{{ category.title() }}:</strong> {{ message }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <p>{{ form.association_name.label }} {{ form.association_name(size=40) }}</p>
+            <p>{{ form.person_name.label }} {{ form.person_name(size=40) }}</p>
+            <p>{{ form.contact.label }} {{ form.contact(size=40) }}</p>
+            <p>{{ form.email.label }} {{ form.email(size=40) }}</p>
+            <p>{{ form.address.label }} {{ form.address(size=40) }}</p>
+
+            <div class="form-buttons">
+                {{ form.submit() }}
+            </div>
+        </form>
+
+        <!-- Consistent Back to Home Button -->
+        <div class="back-home-wrapper">
+            <a href="{{ url_for('home') }}" class="back-home">Back to Home</a>
+        </div>
+    </div>
+</body>
+</html>

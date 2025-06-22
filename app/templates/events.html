@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+:root {
+  --bg-base: #f5f1ec;
+  --text-dark: #2b1a1a;
+  --text-light: #ffffff;
+  --accent-main: #a7745b;
+  --accent-hover: #83543a;
+  --card-bg: #fefcfb;
+  --border-light: #e0d7cf;
+  --sidebar-dark: #40342d;
+  --sidebar-accent: #a2826e;
+}
+
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--bg-base);
+  color: var(--text-dark);
+}
+
+/* Layout */
+.wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Toggle Button */
+.toggle-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background-color: var(--accent-main);
+  color: white;
+  font-size: 22px;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  z-index: 1001;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 250px;
+  background-color: var(--sidebar-dark);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 999;
+  transition: transform 0.3s ease-in-out;
+}
+
+.sidebar.collapsed {
+  transform: translateX(-100%);
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-header img {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 15px;
+}
+
+.sidebar-header strong {
+  font-size: 14px;
+}
+
+.sidebar a {
+  color: white;
+  text-decoration: none;
+  padding: 16px 22px;
+  font-weight: 500;
+  transition: background 0.3s ease;
+}
+
+.sidebar a:hover {
+  background-color: var(--sidebar-accent);
+}
+
+/* Main Content */
+.main-content {
+  margin-left: 250px;
+  flex: 1;
+  padding: 40px 30px;
+  transition: margin-left 0.3s ease-in-out;
+}
+
+.sidebar.collapsed + .main-content {
+  margin-left: 0;
+}
+
+/* Dashboard Card */
+.dashboard-container {
+  background-color: var(--card-bg);
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-light);
+  max-width: 900px;
+  margin: auto;
+}
+
+.dashboard-container h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  color: var(--text-dark);
+  margin-bottom: 18px;
+}
+
+.dashboard-container p {
+  font-size: 15px;
+  color: #555;
+  line-height: 1.6;
+  margin-bottom: 30px;
+}
+
+/* Button Group */
+.button-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.event-button {
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 10px;
+  background-color: var(--accent-main);
+  color: var(--text-light);
+  border: none;
+  text-decoration: none;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.event-button:hover {
+  background-color: var(--accent-hover);
+  transform: scale(1.03);
+}
+</style>
+
+<button id="sidebarToggle" class="toggle-btn" onclick="toggleSidebar()">☰</button>
+
+
+<div class="wrapper">
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="https://via.placeholder.com/40" alt="Organizer">
+            <div class="name-role">
+                <strong>{{ current_user.person_name }}</strong><br>
+                <small>Organizer</small>
+            </div>
+        </div>
+        <a href="{{ url_for('organizer_profile') }}">Profile</a>
+        <a href="{{ url_for('organizer_dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('events') }}">Events</a>
+        <a href="{{ url_for('view_registered_swimmers') }}">View Registered Swimmers</a>
+        <a href="#">Upload Results</a>
+        <a href="#">View Medal Tally</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
+    </div>
+
+    <div class="main-content" id="mainContent">
+        <div class="dashboard-container">
+            <h2>Manage Your Events</h2>
+            <p style="color: #555;">Choose an action below to manage or create your swim meets.</p>
+
+            <div class="button-container">
+                <a href="{{ url_for('published_events') }}" class="event-button">Published Events</a>
+        <a href="{{ url_for('draft_events') }}" class="event-button">Draft Events</a>
+        <a href="{{ url_for('start_new_event') }}" class="event-button">Create New Event</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('collapsed');
+    }
+</script>
+{% endblock %}

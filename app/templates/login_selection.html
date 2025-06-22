@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    :root {
+        --bg: #fefaf6;
+        --card: #ffffff;
+        --text-dark: #2b1a1a;
+        --accent: #a7745b;
+        --accent-hover: #83543a;
+        --shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    body {
+        background-color: var(--bg);
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .form-container {
+        max-width: 500px;
+        margin: 80px auto;
+        padding: 40px;
+        background-color: var(--card);
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        text-align: center;
+    }
+
+    .form-container h2 {
+        font-family: 'Playfair Display', serif;
+        font-size: 28px;
+        color: var(--text-dark);
+        margin-bottom: 30px;
+    }
+
+    .login-options {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        margin-bottom: 25px;
+    }
+
+    .login-options a {
+        display: block;
+        width: 100%;
+        padding: 14px;
+        text-align: center;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        background: linear-gradient(to right, var(--accent), var(--accent-hover));
+        color: white;
+        text-decoration: none;
+        transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+    .login-options a:hover {
+        background: linear-gradient(to right, #996147, #6e402b);
+        transform: scale(1.02);
+    }
+
+    .back-home-wrapper {
+        margin-top: 20px;
+        text-align: center;
+    }
+
+    .back-home {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--accent);
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .back-home:hover {
+        color: var(--accent-hover);
+    }
+
+    .back-home::before {
+        content: "←";
+        margin-right: 8px;
+    }
+</style>
+
+<div class="form-container">
+    <h2>Select Role to Login</h2>
+    <div class="login-options">
+        <a href="{{ url_for('admin_login') }}">Admin Login</a>
+        <a href="{{ url_for('organizer_login') }}">Organizer Login</a>
+        <a href="{{ url_for('swimmer_login') }}">Swimmer Login</a>
+    </div>
+
+    <!-- Consistent Back to Home Button -->
+    <div class="back-home-wrapper">
+        <a href="{{ url_for('home') }}" class="back-home">Back to Home</a>
+    </div>
+</div>
+{% endblock %}

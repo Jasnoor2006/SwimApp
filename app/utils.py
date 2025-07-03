@@ -5,10 +5,12 @@ import random
 import json
 from datetime import timedelta
 from app import db
-from app.models import Event
+from app.models import Event, SwimRace, SwimmerEventRegistration, Swimmer
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import inch
+from collections import defaultdict
+from collections import OrderedDict
 
 
 def generate_verification_code():
@@ -218,3 +220,147 @@ def generate_event_schedule(event_id, start_date, end_date):
     # Save the updated schedule
     event.event_schedule_json = json.dumps(sessions)
     db.session.commit()
+
+from collections import defaultdict
+
+def parse_time(time_str):
+    """Convert time string to float; treat missing/invalid as infinity."""
+    try:
+        return float(time_str.strip())
+    except (ValueError, AttributeError):
+        return float('inf')
+
+def get_lane_order(n_lanes):
+    """
+    Generate lane order for seeding:
+    Start at center lane,
+    then alternate to right and left, moving outward.
+    """
+    center = (n_lanes + 1) // 2  # middle lane, 1-indexed
+    order = [center]
+
+    offset = 1
+    while len(order) < n_lanes:
+        right_lane = center + offset
+        left_lane = center - offset
+
+        if right_lane <= n_lanes:
+            order.append(right_lane)
+        if len(order) >= n_lanes:
+            break
+
+        if left_lane >= 1:
+            order.append(left_lane)
+
+        offset += 1
+
+    return order
+
+
+def assign_lanes(swimmers, n_lanes):
+    """Assign lanes to swimmers in sorted order."""
+    lane_order = get_lane_order(n_lanes)
+    heat = []
+    for i, swimmer in enumerate(swimmers):
+        lane = lane_order[i % n_lanes]
+        heat.append({
+            'swimmer_name': swimmer.swimmer.name,
+            'best_time': swimmer.best_time,
+            'lane': lane
+        })
+    return heat
+
+def divide_into_heats(sorted_swimmers, n_lanes=8):
+    heats = []
+    for i in range(0, len(sorted_swimmers), n_lanes):
+        heat_swimmers = sorted_swimmers[i:i + n_lanes]
+        assigned = assign_lanes(heat_swimmers, n_lanes)
+        heats.append(assigned)
+    return heats
+
+
+
+
+
+
+
+def generate_heat_sheet(meet_id, n_lanes=None):
+    meet = Event.query.get(meet_id)
+    if not meet or not meet.event_schedule_json:
+        return {}
+
+    try:
+        schedule = json.loads(meet.event_schedule_json)
+    except json.JSONDecodeError:
+        return {}
+
+
+    n_lanes = n_lanes or meet.n_lanes or 6
+    heat_sheet = OrderedDict()
+    start_date = meet.start_date 
+
+    for session_index, session in enumerate(schedule):
+        session_date = start_date + timedelta(days=session_index)
+        period = 'morning'
+        period_label = 'Morning'
+        events = session.get(period, [])
+
+        for item in events:
+            if "–" not in item:
+                continue
+            
+            stroke, group_info = map(str.strip, item.split("–"))
+
+
+            parts = group_info.upper().split()
+            if len(parts) < 2:
+                continue
+
+            age_part = parts[0].replace("-", "").upper()  # e.g., U19 or SENIOR
+            gender_word = parts[1].lower()  # e.g., men, women
+
+                
+            if age_part.startswith('U'):
+                age_group = age_part
+            elif age_part == "SENIOR":
+                age_group = "SENIOR"
+            else:
+                print(f"Skipping unknown age group: {age_part}")
+                continue
+
+            gender_word = gender_word.lower().strip()
+
+            if gender_word == "men" or gender_word == "boys":
+                gender = "MEN"
+                age_group_full = f"{age_group}_MEN"
+            elif gender_word == "women" or gender_word == "girls":
+                gender = "WOMEN"
+                age_group_full = f"{age_group}_WOMEN"
+            else:
+                gender = "MIXED"
+                age_group_full = f"{age_group}_MIXED"
+
+            race_name = stroke.strip()
+
+                # Final debug print before query
+            print(f"FINAL QUERY -> name='{race_name}', age_group='{age_group_full}', gender='{gender}'")
+
+            race = SwimRace.query.filter_by(
+                event_id=meet_id,
+                name=race_name,
+                age_group=age_group_full,
+                gender=gender
+            ).first()
+            if not race:
+                print(f"No race found for query: name='{race_name}', age_group='{age_group_full}', gender='{gender}'")
+                continue
+            regs = SwimmerEventRegistration.query.filter_by(swim_race_id=race.id).all()
+            if not regs:
+                continue
+
+            sorted_regs = sorted(regs, key=lambda r: parse_time(r.best_time))
+            key_name = f"{stroke.upper()} – {age_group_full.replace('_', ' ')}"
+            heats = divide_into_heats(sorted_regs, n_lanes)
+            heat_sheet[key_name] = heats
+
+    return heat_sheet

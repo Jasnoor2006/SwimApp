@@ -4,7 +4,7 @@ import random
 import re
 import smtplib
 from app import app, db
-from app.utils import generate_event_schedule, generate_event_pdf, generate_verification_code, send_email_verification, send_sms_verification
+from app.utils import generate_event_schedule, generate_event_pdf, generate_verification_code, send_email_verification, send_sms_verification, generate_heat_sheet
 from flask import Flask, render_template, redirect, url_for, flash, request, session, abort, current_app, send_file, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -13,6 +13,10 @@ from app.forms import OrganizerSignupForm, SwimmerProfileForm , SwimmerLoginForm
 from app.models import Organizer, Swimmer, Admin, Event, PublishedEvent, SwimmerEventRegistration, SwimRace
 from datetime import datetime, timedelta, date
 from email.message import EmailMessage
+from app.models import SwimRace as Race
+
+
+
 
 
 
@@ -34,12 +38,10 @@ from datetime import datetime
 
 @app.route('/')
 def home():
-    today = datetime.today().date()
-    published_events = Event.query.filter(
-        Event.status == "Published",
-        Event.start_date >= today
-    ).order_by(Event.start_date).all()
+    published_events = Event.query.filter_by(status='Published') \
+                                  .order_by(Event.start_date).all()
     return render_template('home.html', published_events=published_events)
+
 
 
 from flask import request  # Make sure this is imported at the top
@@ -391,6 +393,8 @@ def create_event():
         selected_levels = form.meet_levels.data
         organizer_id=current_user.id
         max_individual = form.max_individual_events.data
+        
+
 
 
         if not start_date_obj or not end_date_obj:
@@ -414,8 +418,8 @@ def create_event():
             registration_start_date=reg_start,
             registration_end_date=reg_end,
             age_groups=','.join(all_age_groups),
-            max_individual_events=max_individual
-
+            max_individual_events=max_individual,
+            n_lanes=int(request.form.get("n_lanes"))
         )
 
         db.session.add(new_event)
@@ -629,14 +633,24 @@ def create_event_step_2():
                 db.session.commit()
 
                 for age_group, events in selected_events.items():
+                    ag = age_group.lower()
+                    if ag == "senior_men" or ag == "senior_boys" or ag.endswith("men") or ag.endswith("boys"):
+                        gender = "MEN"
+                    elif ag == "senior_women" or ag == "senior_girls" or ag.endswith("women") or ag.endswith("girls"):
+                        gender = "WOMEN"
+                    elif "mixed" in ag:
+                        gender = "MIXED"
+                    else:
+                        gender = "MIXED"
                     for name in events:
-                        gender = "MIXED" if "Mixed" in name else ("MEN" if "boys" in age_group or "men" in age_group else "WOMEN")
                         race = SwimRace(
                             name=name.strip(),
                             age_group=age_group.upper(),
                             gender=gender.upper(),
                             event_id=event.id
                         )
+                        print(f"Creating race: age_group={age_group}, gender={gender}, event={event.id}")
+
                         db.session.add(race)
 
                 db.session.commit()
@@ -980,17 +994,55 @@ def meet_register(event_id):
 
     allowed_age_groups = event.age_groups.split(',') if event.age_groups else []
 
+    # Check if swimmer has DOB
     if not swimmer.dob:
         flash("Please complete your profile with your date of birth before registering.")
         return redirect(url_for('swimmer_profile'))
 
+    gender_map = {
+        'male': 'male', 'man': 'male', 'men': 'male', 'boy': 'male', 'boys': 'male',
+        'female': 'female', 'woman': 'female', 'women': 'female', 'girl': 'female', 'girls': 'female',
+        'mixed': 'mixed',
+    }
+    # --- Helper functions ---
+    def calculate_age(dob, reference_date):
+        return reference_date.year - dob.year - ((reference_date.month, reference_date.day) < (dob.month, reference_date.day))
+
+    def is_group_eligible(group, age):
+        group = group.lower()
+        if 'u14' in group:
+            return age <= 14
+        elif 'u17' in group:
+            return age <= 17
+        elif 'u19' in group:
+            return age <= 19
+        elif 'senior' in group:
+            return True
+        return False
+
+    # Convert DOB and calculate age
+    if isinstance(swimmer.dob, str):
+        dob = datetime.strptime(swimmer.dob, "%Y-%m-%d").date()
+    else:
+        dob = swimmer.dob
+    swimmer_age = calculate_age(dob, event.start_date)
+
+    # ✅ Generate checkbox list of allowed age groups and eligibility
+    age_group_choices = []
+    for group in allowed_age_groups:
+        label = group.replace('_', ' ').upper()
+        eligible = is_group_eligible(group, swimmer_age)
+        age_group_choices.append({'value': group, 'label': label, 'eligible': eligible})
+
+    # ✅ (Optional) Global eligibility check before showing form
     if not is_eligible(str(swimmer.dob), event.start_date, allowed_age_groups):
         flash("You are not eligible for this event based on your age.", "warning")
         return redirect(url_for('swimmer_dashboard'))
 
-    # Load selected events
     selected_events_json = event.selected_events_json or '{}'
-    all_events = json.loads(selected_events_json)
+    full_events = json.loads(selected_events_json)
+    all_events = {group: events for group, events in full_events.items() if group in allowed_age_groups}
+
 
     import re
 
@@ -1006,8 +1058,6 @@ def meet_register(event_id):
 
     def get_event_key(name):
         name_lower = name.lower()
-
-        # Stroke category
         if 'freestyle' in name_lower and 'relay' not in name_lower:
             stroke = 'freestyle'
         elif 'backstroke' in name_lower:
@@ -1035,51 +1085,146 @@ def meet_register(event_id):
         set(ev for group in all_events.values() for ev in group),
         key=get_event_key
     )
+    # Check if swimmer already registered for this event
+    already_registered = SwimmerEventRegistration.query.filter_by(
+        swimmer_id=swimmer.id,
+        meet_id=event.id
+    ).first()
+
+    if already_registered:
+        flash("You have already registered for this meet.", "warning")
+        return redirect(url_for('swimmer_dashboard'))
+
 
     if request.method == 'POST':
         selected = request.form.getlist('event_choices')
-        print("Selected Events:", selected)
-        print("Max allowed:", event.max_individual_events)
+        selected_group = request.form.get("selected_age_group")
+        if not selected_group:
+            flash("Please select an age group to continue.", "danger")
+            return redirect(request.url)
 
+        
+        all_events = {group: events for group, events in full_events.items() if group == selected_group}
+        timing_data = {
+            ev: request.form.get(f'timing_{ev.replace(" ", "_")}')
+            for ev in selected
+        }
+
+        print("✅ Timing Data Submitted:")
+        for k, v in timing_data.items():
+            print(f"{k}: {v}")
 
         individual_events = [ev for ev in selected if 'relay' not in ev.lower()]
-        
-
-        max_allowed = event.max_individual_events or 999  # Fallback in case not set
-
+        max_allowed = event.max_individual_events or 999
         if len(individual_events) > max_allowed:
             flash(f"You selected {len(individual_events)} individual events, but the limit is {max_allowed}.", "danger")
             return redirect(url_for('meet_register', event_id=event_id))
 
+        swimmer_gender = swimmer.gender.lower().strip()
+        mapped_gender = gender_map.get(swimmer_gender, swimmer_gender)
+
+        if swimmer_gender not in ['male', 'female']:
+            flash("❌ Swimmer gender not recognized.", "danger")
+            return redirect(url_for('meet_register', event_id=event_id))
+
+
+        # Age check
+        swimmer_dob = swimmer.dob
+        if isinstance(swimmer_dob, str):
+            swimmer_dob = datetime.strptime(swimmer_dob, "%Y-%m-%d").date()
+        swimmer_age = event.start_date.year - swimmer_dob.year - (
+            (event.start_date.month, event.start_date.day) < (swimmer_dob.month, swimmer_dob.day)
+        )
+
+        allowed_groups = [g.strip().lower() for g in (event.age_groups or "").split(',')]
+
         for event_name in selected:
-            race = SwimRace.query.filter_by(name=event_name.strip(), event_id=event.id).first()
+            matching_race = None
 
-            if race:
-                existing = SwimmerEventRegistration.query.filter_by(
+            
+            for group in [selected_group]:
+                group_upper = group.upper()
+                race = Race.query.filter_by(event_id=event.id, name=event_name, age_group=group_upper).first()
+                if not race:
+                    continue  # No race for this age group, skip
+
+                # Get age group from race
+                race_age_group = race.age_group.lower()
+
+                # Infer gender from age group
+                if 'women' in race_age_group or 'girls' in race_age_group:
+                    race_gender = 'female'
+                elif 'men' in race_age_group or 'boys' in race_age_group:
+                    race_gender = 'male'
+                elif 'mixed' in race_age_group:
+                    race_gender = 'mixed'
+                else:
+                    race_gender = race.gender.lower() if race.gender else 'unknown'
+
+                # Age check
+                # --- Age Group Check ---
+                if 'senior' in race_age_group:
+                    age_ok = True  # ✅ All ages allowed for senior
+                else:
+                    age_match = re.search(r'u(\d+)', race_age_group)
+                    age_ok = False
+                    if age_match:
+                        max_age = int(age_match.group(1))
+                        if swimmer_age <= max_age:
+                            age_ok = True
+
+                # --- Gender Check ---
+                race_gender_clean = race_gender.strip().lower()
+                mapped_gender_clean = mapped_gender.strip().lower()
+
+                # Gender Check
+                if 'mixed' in race_age_group or race_gender_clean == 'mixed':
+                    gender_ok = True
+                else:
+                    gender_ok = race_gender_clean == swimmer_gender
+
+                print("✅ DEBUGGING REGISTRATION CHECK")
+                print(f"Swimmer: {swimmer.name}, Gender: {swimmer_gender}, Age: {swimmer_age}")
+                print(f"Race: {race.name}, Gender: {race_gender}, Age Group: {race_age_group}")
+                print("Age OK?", age_ok)
+                print("Gender OK?", gender_ok)
+
+                if age_ok and gender_ok:
+                    matching_race = race
+                    break
+
+
+
+            if not matching_race:
+                flash(f"No suitable race found for {event_name}.", "danger")
+                return redirect(url_for('meet_register', event_id=event_id))
+
+            existing = SwimmerEventRegistration.query.filter_by(
+                swimmer_id=swimmer.id,
+                swim_race_id=matching_race.id
+            ).first()
+
+            if not existing:
+                registration = SwimmerEventRegistration(
                     swimmer_id=swimmer.id,
-                    swim_race_id=race.id
-                ).first()
+                    event_id=event.id,
+                    meet_id=event.id,
+                    swim_race_id=matching_race.id,
+                    best_time=timing_data.get(event_name),
+                    age_group_choices=json.dumps(age_group_choices)
+                )
+                db.session.add(registration)
+        print("Saved best time:", timing_data.get(event_name))
 
-                if not existing:
-                    registration = SwimmerEventRegistration(
-                        swimmer_id=swimmer.id,
-                        event_id=event.id,
-                        meet_id=event.id,
-                        swim_race_id=race.id
-                    )
-                    db.session.add(registration)
-
-        # ✅ Commit the changes to the database
         db.session.commit()
-
+        flash("✅ Registration successful!", "success")
+        
         return render_template("registration_success.html", event=event)
-
-
-    # ✅ Correct GET response
+    
     return render_template('meet_registration.html',
                            event=event,
                            swimmer=swimmer,
-                           event_choices=unique_event_names)
+                           event_choices=unique_event_names, age_group_choices=age_group_choices)
 
 
 @app.route('/swimmer-dashboard')
@@ -1091,12 +1236,21 @@ def swimmer_dashboard():
         return redirect(url_for('swimmer_login'))
 
     today = datetime.today().date()
-
+    swimmer = Swimmer.query.filter_by(id=current_user.id).first()
     # 👇 Safely wrap DB access to prevent autoflush errors
     with db.session.no_autoflush:
-        events = Event.query.filter_by(visibility='swimmer', status='Published') \
-                            .filter(Event.start_date >= today) \
-                            .order_by(Event.start_date).all()
+        registered_meets = (
+            db.session.query(Event)
+            .join(SwimmerEventRegistration, SwimmerEventRegistration.meet_id == Event.id)
+            .filter(SwimmerEventRegistration.swimmer_id == swimmer.id)
+            .distinct()
+            .all()
+        )
+
+        registered_meet_ids = [meet.id for meet in registered_meets]
+
+        events = Event.query.filter_by(status='Published').order_by(Event.start_date).all()
+
 
         import json
         for e in events:
@@ -1108,9 +1262,9 @@ def swimmer_dashboard():
 
             e.full_title = generate_full_event_title(e)
 
-        swimmer = Swimmer.query.filter_by(id=current_user.id).first()
+        
 
-    return render_template('swimmer_dashboard.html', swimmer=swimmer, events=events, current_time=datetime.now())
+    return render_template('swimmer_dashboard.html', swimmer=swimmer, events=events, current_time=datetime.now(), registered_meets=registered_meets, registered_meet_ids=registered_meet_ids)
     
 def generate_full_event_title(event):
     from datetime import datetime
@@ -1151,7 +1305,7 @@ def generate_full_event_title(event):
 @app.route('/swimmer-profile', methods=['GET', 'POST'])
 @login_required
 def swimmer_profile():
-    if session.get('user_type') != 'swimmer':
+    if session.get('role') != 'swimmer':
         flash("Access denied.", "danger")
         return redirect(url_for('login_selection'))
 
@@ -1218,6 +1372,17 @@ def swimmer_profile():
             form.sfi_file.data.save(sfi_path)
             swimmer.sfi_file = sfi_filename
         
+        # Assume form.phone.data contains the new phone number
+
+        new_phone = form.phone.data.strip()
+        if new_phone:
+            existing_swimmer = Swimmer.query.filter(Swimmer.phone == new_phone, Swimmer.id != current_user.id).first()
+            if existing_swimmer:
+                flash("Phone number is already used by another swimmer.", "danger")
+                return redirect(url_for('swimmer_profile', edit='true'))
+            else:
+                swimmer.phone = new_phone
+
 
         db.session.commit()
         print("✅ Changes committed to DB.")
@@ -1399,6 +1564,10 @@ def delete_published_event(event_id):
     if event.organizer_id != current_user.id or event.status != "Published":
         abort(403)
 
+    SwimmerEventRegistration.query.filter_by(event_id=event.id).delete()
+
+    SwimRace.query.filter_by(event_id=event.id).delete()
+
     db.session.delete(event)
     db.session.commit()
     flash("Published event deleted.", "success")
@@ -1512,6 +1681,16 @@ def view_event_entries(event_id):
             return "Senior"
 
     event = Event.query.get_or_404(event_id)
+    selected_age_groups = []
+    try:
+        if event.age_groups:
+            selected_age_groups = [ag.strip().lower() for ag in event.age_groups.split(",")]
+    except Exception as e:
+        selected_age_groups = []
+
+    is_senior_only = selected_age_groups == ["senior"]
+    is_single_age_group = len(selected_age_groups) == 1
+    single_age_group_label = selected_age_groups[0].upper().replace("U", "U-") if is_single_age_group else None
     registrations = SwimmerEventRegistration.query.filter_by(event_id=event_id).all()
 
     swimmer_map = {}
@@ -1545,23 +1724,30 @@ def view_event_entries(event_id):
             swimmer_map[swimmer_id]['registered_events'].add(reg.swim_race.name)
 
             # Populate event_structure (grouping)
-            age_group = get_age_group(dob_obj)
+            age_group = reg.swim_race.age_group.upper().replace("_", "-")
+
+
             gender = swimmer.gender or "Unspecified"
             race_name = reg.swim_race.name
+
+            print(f"⏱️ Swimmer: {swimmer.name}, Race: {reg.swim_race.name}, Best Time: {reg.best_time}")
 
             swimmer_data = {
                 'name': swimmer.name,
                 'dob': dob_obj.strftime('%d/%m/%Y') if dob_obj else 'N/A',
+                'best_time': reg.best_time if reg.best_time else '--'
             }
 
             if race_name not in event_structure:
                 event_structure[race_name] = {}
-            if age_group not in event_structure[race_name]:
-                event_structure[race_name][age_group] = {}
-            if gender not in event_structure[race_name][age_group]:
-                event_structure[race_name][age_group][gender] = []
 
-            event_structure[race_name][age_group][gender].append(swimmer_data)
+            if age_group not in event_structure[race_name]:
+                event_structure[race_name][age_group] = []
+
+            event_structure[race_name][age_group].append(swimmer_data)
+
+
+
 
     # Convert to list and sort races
     swimmer_entries = []
@@ -1569,12 +1755,16 @@ def view_event_entries(event_id):
         swimmer['registered_events'] = sorted(list(swimmer['registered_events']))
         swimmer_entries.append(swimmer)
 
+    import pprint
+    pprint.pprint(event_structure)
     return render_template(
         'event_entries.html',
         event=event,
         swimmers=swimmer_entries,
         event_structure=event_structure
     )
+    
+
 
 
 @app.route('/view-registered-swimmers')
@@ -1583,3 +1773,9 @@ def view_registered_swimmers():
     organizer_id = current_user.id
     events = Event.query.filter_by(organizer_id=organizer_id).all()
     return render_template('view_registered_swimmers.html', events=events)
+
+@app.route('/meet/<int:meet_id>/heat-sheet')
+def view_heat_sheet(meet_id):
+    n_lanes = 8  # 🔁 You can make this dynamic later via form input
+    heat_sheet = generate_heat_sheet(meet_id, n_lanes=n_lanes)
+    return render_template('heat_sheet.html', heat_sheet=heat_sheet)

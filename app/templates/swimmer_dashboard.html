@@ -177,49 +177,62 @@ body {
 
   <div style="display: flex; flex-wrap: wrap; gap: 30px;">
     <!-- Upcoming Events -->
-    <div class="dashboard-card" style="flex: 1 1 100%;">
-      <h3> Upcoming Events</h3>
-      {% if events %}
-        <ul class="event-list">
-          {% for event in events %}
-            <li>
-              <div style="margin-bottom: 4px;">
-                <strong style="font-size: 16px;">{{ event.full_title }}</strong>
+    <!-- Upcoming Events -->
+<div class="dashboard-card" style="flex: 1 1 100%;">
+  <h3>Upcoming Events</h3>
+  {% if events %}
+    <ul class="event-list">
+      {% for event in events %}
+        {% if event.id not in registered_meet_ids %}
+        <li>
+          <div style="margin-bottom: 4px;">
+            <strong style="font-size: 16px;">{{ event.full_title }}</strong>
+          </div>
+          <div style="font-size: 14px; color: #5e4a3d;">
+            <p><strong>Registration:</strong> {{ event.registration_start_date.strftime('%d %b %Y') }} to {{ event.registration_end_date.strftime('%d %b %Y') }}</p>
+            {% set today = current_time.date() %}
+            {% if event.registration_start_date <= today <= event.registration_end_date %}
+              <p style="color: green;"><strong>Registration Status:</strong> Open</p>
+              <a href="{{ url_for('meet_register', event_id=event.id) }}" class="swimmer-pdf-btn" style="background-color: #388e3c;">Register</a>
+            {% elif today < event.registration_start_date %}
+              <p style="color: orange;"><strong>Registration Status:</strong> Not yet started</p>
+            {% else %}
+              <p style="color: red;"><strong>Registration Status:</strong> Closed</p>
+            {% endif %}
+          </div>
+          <a href="{{ url_for('view_event_pdf', event_id=event.id) }}" target="_blank" class="swimmer-pdf-btn">Event List</a>
+        </li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>You have no upcoming events.</p>
+  {% endif %}
+</div>
 
-              </div>
-              <div style="font-size: 14px; color: #5e4a3d;">
-                
-                <p><strong>Registration:</strong> {{ event.registration_start_date.strftime('%d %b %Y') }} to {{ event.registration_end_date.strftime('%d %b %Y') }}</p>
-                {% set today = current_time.date() %}
-{% if event.registration_start_date <= today <= event.registration_end_date %}
-  <p style="color: green;"><strong>Registration Status:</strong> Open</p>
-    <a href="{{ url_for('meet_register', event_id=event.id) }}" class="swimmer-pdf-btn" style="background-color: #388e3c; margin-top: 8px;">
-  Register
-</a>
 
-{% elif today < event.registration_start_date %}
-  <p style="color: orange;"><strong>Registration Status:</strong> Not yet started</p>
-{% else %}
-  <p style="color: red;"><strong>Registration Status:</strong> Closed</p>
-{% endif %}
+ <!-- Registered Meets -->
+<div class="dashboard-card" style="flex: 1 1 100%;">
+  <h3>Registered Meets</h3>
 
-              </div>
-              <a href="{{ url_for('view_event_pdf', event_id=event.id) }}" target="_blank" class="swimmer-pdf-btn">
-                 Event List
-              </a>
-            </li>
-          {% endfor %}
-        </ul>
-      {% else %}
-        <p>You have no upcoming events.</p>
-      {% endif %}
-    </div>
+  {% if registered_meets %}
+    <ul class="event-list">
+      {% for event in registered_meets %}
+        <li>
+          <div style="margin-bottom: 4px;">
+            <strong style="font-size: 16px;">{{ event.full_title }}</strong>
+          </div>
+      
+          <a href="{{ url_for('view_event_pdf', event_id=event.id) }}" target="_blank" class="swimmer-pdf-btn">Event List</a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>You haven’t registered for any meets yet.</p>
+  {% endif %}
+</div>
 
-    <!-- Registered Meets -->
-    <div class="dashboard-card" style="flex: 1 1 100%;">
-      <h3> Registered Meets</h3>
-      <p>You haven’t registered for any meets yet.</p>
-    </div>
+
   </div>
 </div>
 

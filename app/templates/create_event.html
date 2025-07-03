@@ -239,16 +239,23 @@ body {
                 </div>
 
                 <label>Meet Level:</label>
-                <div class="checkboxes">
-                    {% for value, label in form.meet_levels.choices %}
-                        <label>
-                            <input type="radio" name="{{ form.meet_levels.name }}" value="{{ value }}"
-       {% if form.meet_levels.data == value or session.get('level') == value %}checked{% endif %}>
+<div class="checkboxes">
+  {% for value, label in form.meet_levels.choices %}
+    <label style="display: block; margin-bottom: 6px;">
+      <input type="radio"
+             name="{{ form.meet_levels.name }}"
+             value="{{ value }}"
+             {% if form.meet_levels.data == value or session.get('level') == value %}checked{% endif %}>
+      {{ label }}
+    </label>
+  {% endfor %}
 
-                            {{ label }}
-                        </label>
-                    {% endfor %}
-                </div>
+  {% if form.meet_levels.errors %}
+    <div class="text-danger mt-1" style="font-size: 14px;">
+      ⚠️ {{ form.meet_levels.errors[0] }}
+    </div>
+  {% endif %}
+</div>
 
                 <!-- Custom Age Group Input (if needed later) -->
                 <div id="customAgeGroups" style="margin-top: 10px;"></div>
@@ -265,6 +272,11 @@ body {
                 {{ form.registration_end_date(class="form-control date-field", type="text") }}
                 <label for="max_individual_events">Max Individual Events per Swimmer:</label>
                 {{ form.max_individual_events(class="form-control", type="number", min="1") }}
+                <div class="form-group">
+  <label for="n_lanes">Number of Lanes in Pool:</label>
+  <input type="number" id="n_lanes" name="n_lanes" class="form-control"  min="2" max="10" required>
+  <small class="form-text text-muted">Choose the number of swim lanes (typically 4, 6, or 8).</small>
+</div>
 
 
                 <button type="submit" name="action" value="next">Next →</button>

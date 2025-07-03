@@ -69,7 +69,7 @@ class CreateEventForm(FlaskForm):
     registration_end_date = DateField("Registration End Date", format='%Y-%m-%d', validators=[DataRequired()])
     max_individual_events = IntegerField("Max Individual Events per Swimmer", validators=[NumberRange(min=1, max=50)])
 
-    age_groups = SelectMultipleField("Age Groups", choices=[
+    age_groups = MultiCheckboxField("Age Groups", choices=[
         ('senior_men', 'Senior (Men)'),
         ('senior_women', 'Senior (Women)'),
         ('u19_boys', 'U-19 (Boys)'),
@@ -88,6 +88,7 @@ class CreateEventForm(FlaskForm):
         ('u8_girls', 'U-8 (Girls)'),
         ('other', 'Other')
     ], validators=[DataRequired()])
+
     meet_levels = RadioField("Meet Level", choices=[
         ('District', 'District'),
         ('State', 'State'),

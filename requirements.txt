@@ -1,0 +1,36 @@
+# 🔧 Core Flask Framework
+Flask>=2.3
+
+# 🧠 Form Handling and CSRF Protection
+Flask-WTF>=1.1
+
+# 🔐 User Authentication
+Flask-Login>=0.6
+
+# 📧 Email Functionality
+Flask-Mail>=0.9
+
+# 🗃️ Database ORM
+Flask-SQLAlchemy>=3.1
+
+# 📁 Secure File Uploads and Handling
+Werkzeug>=2.3
+
+# 🆔 Form Field Validations
+email-validator>=2.1
+
+# 🔐 Password Hashing and Token Support
+itsdangerous>=2.1
+
+# 🧪 Environment Variable Loading
+python-dotenv>=1.0
+
+# 🖼️ Image Uploads
+Pillow>=10.0
+
+# 📄 PDF Generation
+reportlab>=4.0
+
+# to install
+
+pip install -r requirements.txt

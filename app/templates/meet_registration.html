@@ -192,18 +192,28 @@ input[type="submit"]:hover {
   {% if messages %}
     {% for category, message in messages %}
       <div class="alert alert-{{ category }}" style="margin-bottom: 20px; padding: 12px; border-radius: 8px; background-color:
-        {% if category == 'success' %}#d4edda
-        {% elif category == 'danger' %}#f8d7da
-        {% elif category == 'warning' %}#fff3cd
-        {% else %}#e2e3e5{% endif %};
-        color:
-        {% if category == 'success' %}#155724
-        {% elif category == 'danger' %}#721c24
-        {% elif category == 'warning' %}#856404
-        {% else %}#383d41{% endif %};
-      ">
-        {{ message }}
-      </div>
+  {% if category == 'success' %}#d4edda
+  {% elif category == 'danger' %}#f8d7da
+  {% elif category == 'warning' %}#fff3cd
+  {% else %}#e2e3e5{% endif %};
+  color:
+  {% if category == 'success' %}#155724
+  {% elif category == 'danger' %}#721c24
+  {% elif category == 'warning' %}#856404
+  {% else %}#383d41{% endif %};
+">
+  {% if category == 'danger' %}
+    ⚠️ 
+  {% elif category == 'success' %}
+    ✅ 
+  {% elif category == 'warning' %}
+    ⚠️ 
+  {% elif category == 'info' %}
+    ℹ️ 
+  {% endif %}
+  {{ message }}
+</div>
+
     {% endfor %}
   {% endif %}
 {% endwith %}
@@ -211,14 +221,33 @@ input[type="submit"]:hover {
         <form method="POST" action="{{ url_for('meet_register', event_id=event.id) }}">
     <p>Hi <strong>{{ swimmer.name }}</strong>, please select your individual and relay events below:</p>
 
-    <div class="checkbox-grid">
-        {% for ev in event_choices %}
-            <label class="checkbox-item">
-                <input type="checkbox" name="event_choices" value="{{ ev }}">
-                {{ ev }}
-            </label>
-        {% endfor %}
+<h3>Select Your Age Group:</h3>
+<div class="checkbox-grid">
+  {% for group in age_group_choices %}
+    <div class="checkbox-item">
+      <input type="radio" id="group_{{ group.value }}" name="selected_age_group" value="{{ group.value }}"
+             {% if not group.eligible %}disabled{% endif %}>
+      <label for="group_{{ group.value }}">
+        {{ group.label }} {% if not group.eligible %}(Not Eligible){% endif %}
+      </label>
     </div>
+  {% endfor %}
+</div>
+
+
+
+    <div class="checkbox-grid">
+  {% for ev in event_choices %}
+    <div class="checkbox-item">
+      <input type="checkbox" id="ev_{{ ev.replace(' ', '_') }}" name="event_choices" value="{{ ev }}">
+      <label for="ev_{{ ev.replace(' ', '_') }}">{{ ev }}</label>
+      <input type="text" name="timing_{{ ev.replace(' ', '_') }}" placeholder="Best timing (e.g. 00:30)">
+    </div>
+  {% endfor %}
+</div>
+
+
+
 
     <input type="submit" value="Register for Selected Events">
 </form>

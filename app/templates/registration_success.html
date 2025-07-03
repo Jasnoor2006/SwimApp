@@ -1,8 +1,48 @@
 {% extends "base.html" %}
 {% block content %}
-<div style="text-align: center; padding: 60px;">
-  <h1 style="color: green; font-size: 36px;">🎉 Registration Successful!</h1>
+<style>
+  .success-container {
+    text-align: center;
+    padding: 60px;
+    background-color: #fefcfb;
+    color: #40342d;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .success-container h1 {
+    color: #83543a;
+    font-size: 36px;
+    margin-bottom: 16px;
+    font-family: 'Playfair Display', serif;
+  }
+
+  .success-container p {
+    font-size: 18px;
+    color: #5e4a3d;
+    margin-bottom: 30px;
+  }
+
+  .brown-btn {
+    background-color: #a7745b;
+    color: white;
+    padding: 12px 24px;
+    font-size: 16px;
+    border: none;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background 0.3s ease, transform 0.2s ease;
+  }
+
+  .brown-btn:hover {
+    background-color: #83543a;
+    transform: scale(1.05);
+  }
+</style>
+
+<div class="success-container">
+  <h1>REGISTERATION SUCCESSFUL!</h1>
   <p>You have successfully registered for <strong>{{ event.name }}</strong>.</p>
-  <a href="{{ url_for('swimmer_dashboard') }}" class="btn btn-success" style="margin-top: 20px;">Go to Dashboard</a>
+  <a href="{{ url_for('swimmer_dashboard') }}" class="brown-btn">Go to Dashboard</a>
 </div>
 {% endblock %}

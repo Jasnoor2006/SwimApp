@@ -84,6 +84,23 @@ body {
   font-weight: 500;
   transition: background 0.3s ease;
 }
+.btn-generate-heat {
+  background-color: var(--accent-main);
+  color: white;
+  padding: 14px 24px;
+  font-size: 16px;
+  font-weight: 500;
+  border: none;
+  border-radius: 12px;
+  text-decoration: none;
+  display: inline-block;
+  transition: background 0.3s ease;
+}
+
+.btn-generate-heat:hover {
+  background-color: var(--accent-hover);
+}
+
 
 .sidebar a:hover {
   background-color: var(--sidebar-accent);
@@ -105,22 +122,7 @@ body {
   margin: auto;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 30px;
-}
 
-th, td {
-  border: 1px solid #aaa;
-  padding: 10px 12px;
-  text-align: left;
-}
-
-th {
-  background-color: #f1e6df;
-  font-weight: bold;
-}
 
 .group-title {
   margin-top: 40px;
@@ -128,6 +130,37 @@ th {
   font-weight: bold;
   color: var(--accent-main);
 }
+.table-wrapper {
+  margin-bottom: 40px;
+}
+
+table {
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  width: 50%; /* force two equal columns */
+  padding: 14px 20px;
+  text-align: left;
+  border-bottom: 1px solid #ccc;
+  font-size: 16px;
+  word-wrap: break-word;
+}
+
+
+th {
+  background-color: #f3e9e2;
+  font-weight: 600;
+  color: #3d2b2b;
+}
+
+td {
+  background-color: #fffaf5;
+  color: #2f2f2f;
+}
+
 </style>
 
 <!-- Sidebar Toggle Button -->
@@ -146,6 +179,7 @@ th {
         <a href="{{ url_for('organizer_profile') }}">Profile</a>
         <a href="{{ url_for('organizer_dashboard') }}">Dashboard</a>
         <a href="{{ url_for('events') }}">Events</a>
+        <a href="{{ url_for('view_registered_swimmers') }}">View Registered Swimmers</a>
         <a href="#">Upload Results</a>
         <a href="#">View Medal Tally</a>
         <a href="{{ url_for('logout') }}">Logout</a>
@@ -157,43 +191,36 @@ th {
 {% for event_name, age_groups in event_structure.items() %}
   <h2 style="margin-top: 30px;">{{ event_name }}</h2>
 
-  {% for age_group, genders in age_groups.items() %}
+
+  {% for age_group, swimmers in age_groups.items() %}
     <h3>{{ age_group }}</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Date of Birth</th>
+          <th>Best Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for swimmer in swimmers %}
+          <tr>
+            <td>{{ swimmer.name }}</td>
+            <td>{{ swimmer.dob }}</td>
+            <td>{{ swimmer.best_time }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endfor %}   
+{% endfor %}    
+<div style="text-align: center; margin-top: 40px;">
+  <a href="{{ url_for('view_heat_sheet', meet_id=event.id) }}" 
+     class="btn-generate-heat">
+    ➕ Create Heat Sheet
+  </a>
+</div>
 
-    {% for gender, swimmers in genders.items() %}
-      <h4>{{ gender }}</h4>
-      <table border="1" cellpadding="10" cellspacing="0">
-        <thead>
-    <tr>
-        <th>Name</th>
-        <th>Date of Birth</th>
-        <th>Registered Events</th>
-    </tr>
-</thead>
-<tbody>
-    {% for swimmer in swimmers %}
-    <tr>
-        <td>{{ swimmer.name }}</td>
-        <td>{{ swimmer.dob }}</td>
-        <td>
-            {% if swimmer.registered_events %}
-                <ul style="margin: 0; padding-left: 18px;">
-                    {% for ev in swimmer.registered_events %}
-                        <li>{{ ev }}</li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <em>None</em>
-            {% endif %}
-        </td>
-    </tr>
-    {% endfor %}
-</tbody>
-
-      </table>
-    {% endfor %}
-  {% endfor %}
-{% endfor %}
 <script>
     function toggleSidebar() {
         const sidebar = document.getElementById('sidebar');

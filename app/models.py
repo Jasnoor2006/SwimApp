@@ -88,7 +88,7 @@ class Event(db.Model):
     visibility = db.Column(db.String(20))
     full_title = db.Column(db.String(500))
     max_individual_events = db.Column(db.Integer, nullable=True)
-
+    n_lanes = db.Column(db.Integer, nullable=True)
 
 
 
@@ -118,3 +118,5 @@ class SwimmerEventRegistration(db.Model):
     swimmer = db.relationship('Swimmer', back_populates='event_registrations')
     event = db.relationship('Event', foreign_keys=[event_id], backref='swimmer_registrations')
     meet = db.relationship('Event', foreign_keys=[meet_id])
+    best_time = db.Column(db.String(20))  
+    age_group_choices = db.Column(db.Text)

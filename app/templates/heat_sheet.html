@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 style="margin-top: 20px;">Heat Sheet</h2>
+
+{% for event_name, heats in heat_sheet.items() %}
+  <div style="margin-bottom: 30px;">
+    <h3>{{ event_name }}</h3>
+    {% for heat in heats %}
+      <h4>Heat {{ loop.index }}</h4>
+      <table border="1" cellpadding="6" cellspacing="0">
+        <tr>
+          <th>Lane</th>
+          <th>Swimmer</th>
+          <th>Best Time</th>
+        </tr>
+        {% for entry in heat %}
+        <tr>
+          <td>{{ entry.lane }}</td>
+          <td>{{ entry.swimmer_name }}</td>
+          <td>{{ entry.best_time or '--' }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    {% endfor %}
+  </div>
+{% endfor %}
+
+{% if not heat_sheet %}
+  <p>No entries found for this meet.</p>
+{% endif %}
+{% endblock %}
